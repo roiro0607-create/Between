@@ -474,8 +474,22 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
     ? events.filter(event => event.creatorId === currentUser.id)
     : events;
 
-  // 終了したイベントを除外
-  const activeEvents = filteredEvents.filter(event => getEventStatus(event) !== 'closed');
+  // 終了後2日以上経過したイベントを除外
+  const activeEvents = filteredEvents.filter(event => {
+    const status = getEventStatus(event);
+    if (status !== 'closed') return true;
+
+    // 締切による終了の場合、締切から2日以内なら表示
+    if (event.deadline) {
+      const deadlineDate = new Date(event.deadline);
+      const twoDaysAfterDeadline = new Date(deadlineDate.getTime() + 2 * 24 * 60 * 60 * 1000);
+      return new Date() <= twoDaysAfterDeadline;
+    }
+
+    // 定員による終了の場合は、終了後も表示し続ける
+    // （終了時刻が記録されていないため）
+    return true;
+  });
 
   // 新着順（createdAtで降順）にソート
   const sortedEvents = [...activeEvents].sort((a, b) => {
