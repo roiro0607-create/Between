@@ -384,6 +384,7 @@ export default function EventMatchingApp() {
         <EventDetailView
           event={currentEvent}
           applications={applications}
+          currentUser={currentUser}
           onSelectApplicant={selectApplicant}
           onShare={shareEvent}
           onBack={() => setView('home')}
@@ -1015,9 +1016,10 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStat
   );
 }
 
-function EventDetailView({ event, applications, onSelectApplicant, onShare, onBack, formatDateTime, getEventStatus }) {
+function EventDetailView({ event, applications, currentUser, onSelectApplicant, onShare, onBack, formatDateTime, getEventStatus }) {
   if (!event) return null;
 
+  const isEventOwner = currentUser && event.userId === currentUser.id;
   const selectedCount = event.selectedApplicants?.length || 0;
   const canSelectMore = selectedCount < event.maxParticipants;
   const eventStatus = getEventStatus(event);
@@ -1106,81 +1108,83 @@ function EventDetailView({ event, applications, onSelectApplicant, onShare, onBa
           )}
         </div>
 
-        <div className="rounded-2xl p-6 shadow-lg" style={{
-          backgroundColor: 'rgba(255, 255, 255, 0.2)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255, 255, 255, 0.3)'
-        }}>
-          <h3 className="text-xl font-bold mb-4" style={{color: '#FFFFFF'}}>
-            応募者一覧 ({applications.length}件)
-          </h3>
-          
-          {applications.length === 0 ? (
-            <div className="text-center py-8" style={{color: '#FFFFFF', opacity: 0.8}}>
-              まだ応募がありません
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {applications.map(app => {
-                const isSelected = event.selectedApplicants?.includes(app.id);
-                
-                return (
-                  <div
-                    key={app.id}
-                    className="rounded-xl p-4"
-                    style={{
-                      backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
-                      border: '1px solid rgba(255, 255, 255, 0.3)'
-                    }}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-bold" style={{color: '#FFFFFF'}}>{app.name}</h4>
-                      {isSelected ? (
-                        <span className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1" style={{
-                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                          color: '#FFFFFF'
-                        }}>
-                          <Check size={14} />
-                          選択済み
-                        </span>
-                      ) : canSelectMore ? (
-                        <button
-                          onClick={() => onSelectApplicant(event.id, app.id)}
-                          className="px-4 py-2 rounded-xl text-sm font-medium hover:opacity-90 transition-all"
-                          style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                            backdropFilter: 'blur(10px)',
-                            WebkitBackdropFilter: 'blur(10px)',
-                            color: '#FFFFFF',
-                            border: '1px solid rgba(255, 255, 255, 0.3)'
-                          }}
-                        >
-                          この人を選ぶ
-                        </button>
-                      ) : null}
-                    </div>
-                    
-                    {app.message && (
-                      <p className="text-sm mb-3" style={{color: '#FFFFFF', opacity: 0.9}}>{app.message}</p>
-                    )}
-                    
-                    {isSelected && (
-                      <div className="rounded-lg p-3" style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                        border: '1px solid rgba(255, 255, 255, 0.25)'
-                      }}>
-                        <p className="text-sm" style={{color: '#FFFFFF'}}>
-                          <span className="font-medium">連絡先:</span> {app.contact}
-                        </p>
+        {isEventOwner && (
+          <div className="rounded-2xl p-6 shadow-lg" style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}>
+            <h3 className="text-xl font-bold mb-4" style={{color: '#FFFFFF'}}>
+              応募者一覧 ({applications.length}件)
+            </h3>
+
+            {applications.length === 0 ? (
+              <div className="text-center py-8" style={{color: '#FFFFFF', opacity: 0.8}}>
+                まだ応募がありません
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {applications.map(app => {
+                  const isSelected = event.selectedApplicants?.includes(app.id);
+
+                  return (
+                    <div
+                      key={app.id}
+                      className="rounded-xl p-4"
+                      style={{
+                        backgroundColor: isSelected ? 'rgba(255, 255, 255, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-bold" style={{color: '#FFFFFF'}}>{app.name}</h4>
+                        {isSelected ? (
+                          <span className="px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1" style={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                            color: '#FFFFFF'
+                          }}>
+                            <Check size={14} />
+                            選択済み
+                          </span>
+                        ) : canSelectMore ? (
+                          <button
+                            onClick={() => onSelectApplicant(event.id, app.id)}
+                            className="px-4 py-2 rounded-xl text-sm font-medium hover:opacity-90 transition-all"
+                            style={{
+                              backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                              backdropFilter: 'blur(10px)',
+                              WebkitBackdropFilter: 'blur(10px)',
+                              color: '#FFFFFF',
+                              border: '1px solid rgba(255, 255, 255, 0.3)'
+                            }}
+                          >
+                            この人を選ぶ
+                          </button>
+                        ) : null}
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+
+                      {app.message && (
+                        <p className="text-sm mb-3" style={{color: '#FFFFFF', opacity: 0.9}}>{app.message}</p>
+                      )}
+
+                      {isSelected && (
+                        <div className="rounded-lg p-3" style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                          border: '1px solid rgba(255, 255, 255, 0.25)'
+                        }}>
+                          <p className="text-sm" style={{color: '#FFFFFF'}}>
+                            <span className="font-medium">連絡先:</span> {app.contact}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
