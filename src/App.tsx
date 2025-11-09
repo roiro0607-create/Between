@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Users, Share2, Check, Clock, Send } from 'lucide-react';
+import { api } from './api';
 
 export default function EventMatchingApp() {
   const [view, setView] = useState('home');
@@ -52,123 +53,85 @@ export default function EventMatchingApp() {
     loadData();
   }, []);
 
-  const loadData = () => {
+  const loadData = async () => {
     try {
-      const loadedEvents = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('event:')) {
-          try {
-            const value = localStorage.getItem(key);
-            if (value) {
-              loadedEvents.push(JSON.parse(value));
-            }
-          } catch (error) {
-            console.log('イベント読み込みエラー:', error);
-          }
-        }
-      }
+      const loadedEvents = await api.getEvents();
       setEvents(loadedEvents);
     } catch (error) {
-      console.log('初回読み込み:', error);
+      console.error('イベント読み込みエラー:', error);
+      setEvents([]);
     }
   };
 
-  const createEvent = (eventData) => {
-    const newEvent = {
-      id: `evt_${Date.now()}`,
-      ...eventData,
-      createdAt: new Date().toISOString(),
-      status: 'open',
-      selectedApplicants: []
-    };
-    
+  const createEvent = async (eventData) => {
     try {
-      localStorage.setItem(`event:${newEvent.id}`, JSON.stringify(newEvent));
+      const newEvent = await api.createEvent(eventData);
       setEvents([...events, newEvent]);
       setCurrentEvent(newEvent);
       setView('event-detail');
     } catch (error) {
+      console.error('イベント作成エラー:', error);
       alert('イベントの作成に失敗しました');
     }
   };
 
-  const submitApplication = (eventId, applicationData) => {
-    const application = {
-      id: `app_${Date.now()}`,
-      eventId,
-      ...applicationData,
-      createdAt: new Date().toISOString(),
-      status: 'pending'
-    };
-    
+  const submitApplication = async (eventId, applicationData) => {
     try {
-      localStorage.setItem(`app:${application.id}`, JSON.stringify(application));
-      setApplications([...applications, application]);
+      const newApplication = await api.createApplication({
+        eventId,
+        ...applicationData
+      });
+      setApplications([...applications, newApplication]);
       setView('application-success');
     } catch (error) {
+      console.error('応募送信エラー:', error);
       alert('応募の送信に失敗しました');
     }
   };
 
-  const selectApplicant = (eventId, applicationId) => {
+  const selectApplicant = async (eventId, applicationId) => {
     try {
-      const eventData = localStorage.getItem(`event:${eventId}`);
-      if (!eventData) return;
-      
-      const event = JSON.parse(eventData);
-      const appData = localStorage.getItem(`app:${applicationId}`);
-      if (!appData) return;
-      
-      const application = JSON.parse(appData);
-      
+      // イベントと応募データを取得
+      const event = await api.getEvent(eventId);
+      const application = await api.getApplication(applicationId);
+
+      if (!event || !application) {
+        alert('データの取得に失敗しました');
+        return;
+      }
+
       if (!event.selectedApplicants) {
         event.selectedApplicants = [];
       }
-      
+
       if (event.selectedApplicants.length >= event.maxParticipants) {
         alert('定員に達しています');
         return;
       }
-      
+
+      // イベントと応募を更新
       event.selectedApplicants.push(applicationId);
-      application.status = 'selected';
-      
-      localStorage.setItem(`event:${eventId}`, JSON.stringify(event));
-      localStorage.setItem(`app:${applicationId}`, JSON.stringify(application));
-      
-      setEvents(events.map(e => e.id === eventId ? event : e));
-      setApplications(applications.map(a => a.id === applicationId ? application : a));
-      setCurrentEvent(event);
-      
+      const updatedEvent = await api.updateEvent(eventId, { selectedApplicants: event.selectedApplicants });
+      const updatedApplication = await api.updateApplication(applicationId, { status: 'selected' });
+
+      setEvents(events.map(e => e.id === eventId ? updatedEvent : e));
+      setApplications(applications.map(a => a.id === applicationId ? updatedApplication : a));
+      setCurrentEvent(updatedEvent);
+
       alert(`${application.name}さんを選択しました！🎉`);
     } catch (error) {
+      console.error('選択エラー:', error);
       alert('選択に失敗しました');
     }
   };
 
-  const loadEventApplications = (eventId) => {
+  const loadEventApplications = async (eventId) => {
     try {
-      const loadedApps = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('app:')) {
-          try {
-            const value = localStorage.getItem(key);
-            if (value) {
-              const app = JSON.parse(value);
-              if (app.eventId === eventId) {
-                loadedApps.push(app);
-              }
-            }
-          } catch (error) {
-            console.log('応募データ読み込みエラー:', error);
-          }
-        }
-      }
+      const loadedApps = await api.getApplications(eventId);
       setApplications(loadedApps);
     } catch (error) {
-      console.log('応募データ読み込みエラー:', error);
+      console.error('応募データ読み込みエラー:', error);
+      setApplications([]);
     }
   };
 
@@ -220,16 +183,14 @@ export default function EventMatchingApp() {
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get('event');
     if (eventId) {
-      try {
-        const eventData = localStorage.getItem(`event:${eventId}`);
-        if (eventData) {
-          const event = JSON.parse(eventData);
+      api.getEvent(eventId)
+        .then(event => {
           setCurrentEvent(event);
           setView('apply');
-        }
-      } catch (error) {
-        console.log('イベント読み込みエラー:', error);
-      }
+        })
+        .catch(error => {
+          console.error('イベント読み込みエラー:', error);
+        });
     }
   }, []);
 
