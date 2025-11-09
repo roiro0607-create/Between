@@ -338,6 +338,7 @@ export default function EventMatchingApp() {
           onViewEvent={viewEventDetail}
           onLogin={() => setView('login')}
           onRegister={() => setView('register')}
+          onProfile={() => setView('profile')}
           onLogout={handleLogout}
           formatDateTime={formatDateTime}
           getEventStatus={getEventStatus}
@@ -404,7 +405,7 @@ export default function EventMatchingApp() {
   }
 }
 
-function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRegister, onLogout, formatDateTime, getEventStatus }) {
+function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRegister, onProfile, onLogout, formatDateTime, getEventStatus }) {
   const [displayCount, setDisplayCount] = useState(10);
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'my'
 
@@ -447,7 +448,7 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
             {currentUser ? (
               <>
                 <button
-                  onClick={() => setView('profile')}
+                  onClick={onProfile}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl hover:opacity-90 transition-all cursor-pointer"
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
