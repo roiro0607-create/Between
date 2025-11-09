@@ -131,6 +131,20 @@ export default function EventMatchingApp() {
     }
   };
 
+  const updateEventInfo = async (eventId, eventData) => {
+    try {
+      const updatedEvent = await api.updateEventInfo(eventId, eventData);
+      setEvents(events.map(e => e.id === eventId ? updatedEvent : e));
+      setCurrentEvent(updatedEvent);
+      loadEventApplications(eventId);
+      setView('event-detail');
+      alert('イベントを更新しました');
+    } catch (error) {
+      console.error('イベント更新エラー:', error);
+      alert('イベントの更新に失敗しました');
+    }
+  };
+
   const submitApplication = async (eventId, applicationData) => {
     try {
       const newApplication = await api.createApplication({
@@ -197,9 +211,35 @@ export default function EventMatchingApp() {
     setView('event-detail');
   };
 
+  const handleDeleteEvent = async (eventId) => {
+    const confirmed = window.confirm('本当に削除していいですか？\n\nこの操作は取り消せません。');
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await api.deleteEvent(eventId);
+
+      // イベントリストから削除
+      setEvents(events.filter(e => e.id !== eventId));
+
+      alert('イベントを削除しました');
+      setView('home');
+    } catch (error) {
+      console.error('イベント削除エラー:', error);
+      alert('イベントの削除に失敗しました');
+    }
+  };
+
+  const handleEditEvent = (event) => {
+    setCurrentEvent(event);
+    setView('edit-event');
+  };
+
   const shareEvent = (event) => {
     const url = `${window.location.origin}?event=${event.id}`;
-    
+
     // URLをクリップボードにコピー
     navigator.clipboard.writeText(url).then(() => {
       // Web Share APIが使える場合は選択肢を提供
@@ -352,9 +392,26 @@ export default function EventMatchingApp() {
       <>
         <MarbleBackground />
         <GlassOverlay />
-        <CreateEventView 
+        <CreateEventView
           onCreate={createEvent}
           onBack={() => setView('home')}
+        />
+      </>
+    );
+  }
+
+  if (view === 'edit-event') {
+    return (
+      <>
+        <MarbleBackground />
+        <GlassOverlay />
+        <CreateEventView
+          editingEvent={currentEvent}
+          onUpdate={updateEventInfo}
+          onBack={() => {
+            loadEventApplications(currentEvent.id);
+            setView('event-detail');
+          }}
         />
       </>
     );
@@ -387,6 +444,8 @@ export default function EventMatchingApp() {
           currentUser={currentUser}
           onSelectApplicant={selectApplicant}
           onShare={shareEvent}
+          onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
           onBack={() => setView('home')}
           formatDateTime={formatDateTime}
           getEventStatus={getEventStatus}
@@ -686,8 +745,15 @@ function EventInfoCard() {
   );
 }
 
-function CreateEventView({ onCreate, onBack }) {
-  const [formData, setFormData] = useState({
+function CreateEventView({ onCreate, onUpdate, editingEvent, onBack }) {
+  const [formData, setFormData] = useState(editingEvent ? {
+    title: editingEvent.title || '',
+    description: editingEvent.description || '',
+    date: editingEvent.date || '',
+    location: editingEvent.location || '',
+    maxParticipants: editingEvent.maxParticipants || 1,
+    deadline: editingEvent.deadline || ''
+  } : {
     title: '',
     description: '',
     date: '',
@@ -701,7 +767,12 @@ function CreateEventView({ onCreate, onBack }) {
       alert('タイトルと説明は必須です');
       return;
     }
-    onCreate(formData);
+
+    if (editingEvent) {
+      onUpdate(editingEvent.id, formData);
+    } else {
+      onCreate(formData);
+    }
   };
 
   return (
@@ -715,7 +786,9 @@ function CreateEventView({ onCreate, onBack }) {
           WebkitBackdropFilter: 'blur(10px)',
           border: '1px solid rgba(255, 255, 255, 0.3)'
         }}>
-          <h2 className="text-2xl font-bold mb-6" style={{color: '#FFFFFF'}}>イベントを作成</h2>
+          <h2 className="text-2xl font-bold mb-6" style={{color: '#FFFFFF'}}>
+            {editingEvent ? 'イベントを編集' : 'イベントを作成'}
+          </h2>
           
           <div className="space-y-4">
             <div>
@@ -840,7 +913,7 @@ function CreateEventView({ onCreate, onBack }) {
                 border: '1px solid rgba(255, 255, 255, 0.3)'
               }}
             >
-              イベントを作成
+              {editingEvent ? 'イベントを更新' : 'イベントを作成'}
             </button>
           </div>
         </div>
@@ -1016,7 +1089,7 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStat
   );
 }
 
-function EventDetailView({ event, applications, currentUser, onSelectApplicant, onShare, onBack, formatDateTime, getEventStatus }) {
+function EventDetailView({ event, applications, currentUser, onSelectApplicant, onShare, onEdit, onDelete, onBack, formatDateTime, getEventStatus }) {
   if (!event) return null;
 
   const isEventOwner = currentUser && event.userId === currentUser.id;
@@ -1048,20 +1121,52 @@ function EventDetailView({ event, applications, currentUser, onSelectApplicant, 
                 </span>
               </div>
             </div>
-            <button
-              onClick={() => onShare(event)}
-              className="px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                color: '#FFFFFF',
-                border: '1px solid rgba(255, 255, 255, 0.3)'
-              }}
-            >
-              <Share2 size={16} />
-              シェア
-            </button>
+            <div className="flex items-center gap-2">
+              {isEventOwner && (
+                <>
+                  <button
+                    onClick={() => onEdit(event)}
+                    className="px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)',
+                      color: '#FFFFFF',
+                      border: '1px solid rgba(255, 255, 255, 0.3)'
+                    }}
+                  >
+                    編集
+                  </button>
+                  <button
+                    onClick={() => onDelete(event.id)}
+                    className="px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
+                    style={{
+                      backgroundColor: 'rgba(255, 100, 100, 0.25)',
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)',
+                      color: '#FFFFFF',
+                      border: '1px solid rgba(255, 100, 100, 0.3)'
+                    }}
+                  >
+                    削除
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => onShare(event)}
+                className="px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.3)'
+                }}
+              >
+                <Share2 size={16} />
+                シェア
+              </button>
+            </div>
           </div>
           
           <p className="mb-4" style={{color: '#FFFFFF', opacity: 0.9}}>{event.description}</p>

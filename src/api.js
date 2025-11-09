@@ -136,6 +136,30 @@ export const api = {
     return response.json();
   },
 
+  async updateEventInfo(eventId, eventData) {
+    const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(eventData),
+    });
+    if (!response.ok) throw new Error('Failed to update event info');
+    return response.json();
+  },
+
+  async deleteEvent(eventId) {
+    const response = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+      method: 'DELETE',
+      headers: {
+        ...getAuthHeaders(),
+      },
+    });
+    if (!response.ok) throw new Error('Failed to delete event');
+    return response.json();
+  },
+
   // 応募関連
   async getApplications(eventId = null) {
     const url = eventId
