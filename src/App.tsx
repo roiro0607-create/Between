@@ -7,6 +7,28 @@ export default function EventMatchingApp() {
   const [currentEvent, setCurrentEvent] = useState(null);
   const [applications, setApplications] = useState([]);
 
+  // イベントのステータスを判定する関数
+  const getEventStatus = (event) => {
+    if (!event) return 'open';
+
+    // 締切日が設定されていて、現在時刻が締切を過ぎている場合
+    if (event.deadline) {
+      const now = new Date();
+      const deadline = new Date(event.deadline);
+      if (now > deadline) {
+        return 'closed';
+      }
+    }
+
+    // 定員に達している場合
+    const selectedCount = event.selectedApplicants?.length || 0;
+    if (event.maxParticipants !== 21 && selectedCount >= event.maxParticipants) {
+      return 'closed';
+    }
+
+    return event.status || 'open';
+  };
+
   useEffect(() => {
     const link1 = document.createElement('link');
     link1.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap';
@@ -250,11 +272,12 @@ export default function EventMatchingApp() {
       <>
         <MarbleBackground />
         <GlassOverlay />
-        <HomeView 
-          events={events} 
+        <HomeView
+          events={events}
           onCreateNew={() => setView('create')}
           onViewEvent={viewEventDetail}
           formatDateTime={formatDateTime}
+          getEventStatus={getEventStatus}
         />
       </>
     );
@@ -278,11 +301,12 @@ export default function EventMatchingApp() {
       <>
         <MarbleBackground />
         <GlassOverlay />
-        <ApplicationView 
+        <ApplicationView
           event={currentEvent}
           onSubmit={submitApplication}
           onBack={() => setView('home')}
           formatDateTime={formatDateTime}
+          getEventStatus={getEventStatus}
         />
       </>
     );
@@ -293,13 +317,14 @@ export default function EventMatchingApp() {
       <>
         <MarbleBackground />
         <GlassOverlay />
-        <EventDetailView 
+        <EventDetailView
           event={currentEvent}
           applications={applications}
           onSelectApplicant={selectApplicant}
           onShare={shareEvent}
           onBack={() => setView('home')}
           formatDateTime={formatDateTime}
+          getEventStatus={getEventStatus}
         />
       </>
     );
@@ -316,7 +341,7 @@ export default function EventMatchingApp() {
   }
 }
 
-function HomeView({ events, onCreateNew, onViewEvent, formatDateTime }) {
+function HomeView({ events, onCreateNew, onViewEvent, formatDateTime, getEventStatus }) {
   const [displayCount, setDisplayCount] = useState(10);
 
   // 新着順（createdAtで降順）にソート
@@ -348,9 +373,9 @@ function HomeView({ events, onCreateNew, onViewEvent, formatDateTime }) {
           <p className="text-lg" style={{color: '#FFFFFF'}}>やりたいことを投稿して、仲間を見つけよう</p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 lg:justify-center">
           {/* メインコンテンツエリア */}
-          <div className="flex-1 max-w-2xl mx-auto lg:mx-0 w-full">
+          <div className="flex-1 max-w-2xl mx-auto w-full">
             <button
               onClick={onCreateNew}
               className="w-full py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all mb-6"
@@ -364,11 +389,6 @@ function HomeView({ events, onCreateNew, onViewEvent, formatDateTime }) {
             >
               ＋ 新しいイベントを作る
             </button>
-
-            {/* SP: イベント情報カード */}
-            <div className="block lg:hidden mb-6">
-              <EventInfoCard />
-            </div>
 
             <div className="space-y-4">
               {displayedEvents.length === 0 ? (
@@ -398,10 +418,10 @@ function HomeView({ events, onCreateNew, onViewEvent, formatDateTime }) {
                       <div className="flex items-start justify-between mb-3">
                         <h3 className="text-xl font-bold" style={{color: '#FFFFFF'}}>{event.title}</h3>
                         <span className={`px-3 py-1 rounded-full text-sm font-medium`} style={{
-                          backgroundColor: event.status === 'open' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.15)',
+                          backgroundColor: getEventStatus(event) === 'open' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.15)',
                           color: '#FFFFFF'
                         }}>
-                          {event.status === 'open' ? '募集中' : '終了'}
+                          {getEventStatus(event) === 'open' ? '募集中' : '終了'}
                         </span>
                       </div>
                       
@@ -451,6 +471,11 @@ function HomeView({ events, onCreateNew, onViewEvent, formatDateTime }) {
                   )}
                 </>
               )}
+            </div>
+
+            {/* SP: イベント情報カード - イベントリストの最下層 */}
+            <div className="block lg:hidden mt-6">
+              <EventInfoCard />
             </div>
           </div>
 
@@ -652,7 +677,7 @@ function CreateEventView({ onCreate, onBack }) {
   );
 }
 
-function ApplicationView({ event, onSubmit, onBack, formatDateTime }) {
+function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStatus }) {
   const [formData, setFormData] = useState({
     name: '',
     message: '',
@@ -664,6 +689,13 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime }) {
       alert('お名前と連絡先は必須です');
       return;
     }
+
+    // 締切チェック
+    if (getEventStatus(event) === 'closed') {
+      alert('このイベントは募集を終了しています');
+      return;
+    }
+
     onSubmit(event.id, formData);
   };
 
@@ -677,6 +709,9 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime }) {
       </div>
     );
   }
+
+  const eventStatus = getEventStatus(event);
+  const isClosed = eventStatus === 'closed';
 
   return (
     <div className="min-h-screen p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
@@ -715,7 +750,18 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime }) {
           border: '1px solid rgba(255, 255, 255, 0.3)'
         }}>
           <h3 className="text-xl font-bold mb-6" style={{color: '#FFFFFF'}}>参加を希望する</h3>
-          
+
+          {isClosed && (
+            <div className="mb-6 rounded-xl p-4" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.25)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }}>
+              <p className="text-center font-medium" style={{color: '#FFFFFF'}}>
+                ⚠️ このイベントは募集を終了しています
+              </p>
+            </div>
+          )}
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
@@ -776,17 +822,20 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime }) {
 
             <button
               onClick={handleSubmit}
-              className="w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+              disabled={isClosed}
+              className="w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2"
               style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                backgroundColor: isClosed ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.25)',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
                 color: '#FFFFFF',
-                border: '1px solid rgba(255, 255, 255, 0.3)'
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                opacity: isClosed ? 0.5 : 1,
+                cursor: isClosed ? 'not-allowed' : 'pointer'
               }}
             >
               <Send size={20} />
-              応募する
+              {isClosed ? '募集終了' : '応募する'}
             </button>
           </div>
         </div>
@@ -795,11 +844,13 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime }) {
   );
 }
 
-function EventDetailView({ event, applications, onSelectApplicant, onShare, onBack, formatDateTime }) {
+function EventDetailView({ event, applications, onSelectApplicant, onShare, onBack, formatDateTime, getEventStatus }) {
   if (!event) return null;
 
   const selectedCount = event.selectedApplicants?.length || 0;
   const canSelectMore = selectedCount < event.maxParticipants;
+  const eventStatus = getEventStatus(event);
+  const isClosed = eventStatus === 'closed';
 
   return (
     <div className="min-h-screen p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
@@ -813,7 +864,17 @@ function EventDetailView({ event, applications, onSelectApplicant, onShare, onBa
           border: '1px solid rgba(255, 255, 255, 0.3)'
         }}>
           <div className="flex items-start justify-between mb-4">
-            <h2 className="text-2xl font-bold" style={{color: '#FFFFFF'}}>{event.title}</h2>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h2 className="text-2xl font-bold" style={{color: '#FFFFFF'}}>{event.title}</h2>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium`} style={{
+                  backgroundColor: isClosed ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}>
+                  {isClosed ? '終了' : '募集中'}
+                </span>
+              </div>
+            </div>
             <button
               onClick={() => onShare(event)}
               className="px-4 py-2 rounded-xl font-medium flex items-center gap-2 transition-colors"
@@ -851,14 +912,27 @@ function EventDetailView({ event, applications, onSelectApplicant, onShare, onBa
             </div>
           </div>
 
-          <div className="rounded-xl p-4" style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <p className="text-sm font-medium" style={{color: '#FFFFFF'}}>
-              💡 このリンクをSNSでシェアして参加者を募集しましょう！
-            </p>
-          </div>
+          {!isClosed && (
+            <div className="rounded-xl p-4" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <p className="text-sm font-medium" style={{color: '#FFFFFF'}}>
+                💡 このリンクをSNSでシェアして参加者を募集しましょう！
+              </p>
+            </div>
+          )}
+
+          {isClosed && (
+            <div className="rounded-xl p-4" style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }}>
+              <p className="text-sm font-medium text-center" style={{color: '#FFFFFF'}}>
+                ⚠️ このイベントは募集を終了しています
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="rounded-2xl p-6 shadow-lg" style={{
