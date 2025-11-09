@@ -83,8 +83,7 @@ export default function EventMatchingApp() {
     try {
       localStorage.setItem(`app:${application.id}`, JSON.stringify(application));
       setApplications([...applications, application]);
-      alert('応募が完了しました！🎉');
-      setView('home');
+      setView('application-success');
     } catch (error) {
       alert('応募の送信に失敗しました');
     }
@@ -159,16 +158,28 @@ export default function EventMatchingApp() {
 
   const shareEvent = (event) => {
     const url = `${window.location.origin}?event=${event.id}`;
-    if (navigator.share) {
-      navigator.share({
-        title: event.title,
-        text: `${event.title} - 参加者募集中！`,
-        url: url
-      });
-    } else {
-      navigator.clipboard.writeText(url);
-      alert('URLをコピーしました！SNSでシェアしてください 📋');
-    }
+    
+    // URLをクリップボードにコピー
+    navigator.clipboard.writeText(url).then(() => {
+      // Web Share APIが使える場合は選択肢を提供
+      if (navigator.share) {
+        const shouldUseWebShare = window.confirm('URLをコピーしました！\n\nOKを押すと共有メニューが開きます。\nキャンセルを押すとそのままクリップボードにコピーされた状態になります。');
+        if (shouldUseWebShare) {
+          navigator.share({
+            title: event.title,
+            text: `${event.title} - 参加者募集中！`,
+            url: url
+          }).catch(() => {
+            // ユーザーがキャンセルした場合は何もしない
+          });
+        }
+      } else {
+        alert('URLをコピーしました！\n\n' + url + '\n\nSNSでシェアしてください 📋');
+      }
+    }).catch(() => {
+      // クリップボードへのコピーが失敗した場合
+      alert('URLを表示します：\n\n' + url);
+    });
   };
 
   const formatDateTime = (dateTimeStr) => {
@@ -293,12 +304,37 @@ export default function EventMatchingApp() {
       </>
     );
   }
+
+  if (view === 'application-success') {
+    return (
+      <>
+        <MarbleBackground />
+        <GlassOverlay />
+        <ApplicationSuccessView onBackToHome={() => setView('home')} />
+      </>
+    );
+  }
 }
 
 function HomeView({ events, onCreateNew, onViewEvent, formatDateTime }) {
+  const [displayCount, setDisplayCount] = useState(10);
+
+  // 新着順（createdAtで降順）にソート
+  const sortedEvents = [...events].sort((a, b) => {
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
+  // 表示するイベントを制限
+  const displayedEvents = sortedEvents.slice(0, displayCount);
+  const hasMore = sortedEvents.length > displayCount;
+
+  const loadMore = () => {
+    setDisplayCount(prev => prev + 10);
+  };
+
   return (
     <div className="min-h-screen p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 pt-8">
           <h1 className="text-6xl mb-3" style={{
             fontFamily: "'Elns Sans', sans-serif",
@@ -312,84 +348,142 @@ function HomeView({ events, onCreateNew, onViewEvent, formatDateTime }) {
           <p className="text-lg" style={{color: '#FFFFFF'}}>やりたいことを投稿して、仲間を見つけよう</p>
         </div>
 
-        <button
-          onClick={onCreateNew}
-          className="w-full py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all mb-6"
-          style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.25)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            color: '#FFFFFF',
-            border: '1px solid rgba(255, 255, 255, 0.3)'
-          }}
-        >
-          ＋ 新しいイベントを作る
-        </button>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* メインコンテンツエリア */}
+          <div className="flex-1 max-w-2xl mx-auto lg:mx-0 w-full">
+            <button
+              onClick={onCreateNew}
+              className="w-full py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-all mb-6"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.3)'
+              }}
+            >
+              ＋ 新しいイベントを作る
+            </button>
 
-        <div className="space-y-4">
-          {events.length === 0 ? (
-            <div className="rounded-2xl p-8 text-center shadow-md" style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.2)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              color: '#FFFFFF',
-              border: '1px solid rgba(255, 255, 255, 0.3)'
-            }}>
-              まだイベントがありません
+            {/* SP: イベント情報カード */}
+            <div className="block lg:hidden mb-6">
+              <EventInfoCard />
             </div>
-          ) : (
-            events.map(event => (
-              <div
-                key={event.id}
-                onClick={() => onViewEvent(event)}
-                className="rounded-2xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer"
-                style={{
+
+            <div className="space-y-4">
+              {displayedEvents.length === 0 ? (
+                <div className="rounded-2xl p-8 text-center shadow-md" style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
+                  color: '#FFFFFF',
                   border: '1px solid rgba(255, 255, 255, 0.3)'
-                }}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-xl font-bold" style={{color: '#FFFFFF'}}>{event.title}</h3>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium`} style={{
-                    backgroundColor: event.status === 'open' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.15)',
-                    color: '#FFFFFF'
-                  }}>
-                    {event.status === 'open' ? '募集中' : '終了'}
-                  </span>
+                }}>
+                  まだイベントがありません
                 </div>
-                
-                <p className="mb-4" style={{color: '#FFFFFF', opacity: 0.9}}>{event.description}</p>
-                
-                <div className="space-y-2 text-sm" style={{color: '#FFFFFF', opacity: 0.85}}>
-                  {event.date && (
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} />
-                      <span>{formatDateTime(event.date)}</span>
+              ) : (
+                <>
+                  {displayedEvents.map(event => (
+                    <div
+                      key={event.id}
+                      onClick={() => onViewEvent(event)}
+                      className="rounded-2xl p-6 shadow-md hover:shadow-lg transition-all cursor-pointer"
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                      }}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <h3 className="text-xl font-bold" style={{color: '#FFFFFF'}}>{event.title}</h3>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium`} style={{
+                          backgroundColor: event.status === 'open' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.15)',
+                          color: '#FFFFFF'
+                        }}>
+                          {event.status === 'open' ? '募集中' : '終了'}
+                        </span>
+                      </div>
+                      
+                      <p className="mb-4" style={{color: '#FFFFFF', opacity: 0.9}}>{event.description}</p>
+                      
+                      <div className="space-y-2 text-sm" style={{color: '#FFFFFF', opacity: 0.85}}>
+                        {event.date && (
+                          <div className="flex items-center gap-2">
+                            <Calendar size={16} />
+                            <span>{formatDateTime(event.date)}</span>
+                          </div>
+                        )}
+                        {event.location && (
+                          <div className="flex items-center gap-2">
+                            <MapPin size={16} />
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <Users size={16} />
+                          <span>募集人数: {event.maxParticipants === 21 ? '21人〜' : `${event.maxParticipants}人`}</span>
+                        </div>
+                        {event.deadline && (
+                          <div className="flex items-center gap-2">
+                            <Clock size={16} />
+                            <span>締切: {formatDateTime(event.deadline)}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  ))}
+                  
+                  {hasMore && (
+                    <button
+                      onClick={loadMore}
+                      className="w-full py-3 rounded-xl font-medium text-base shadow-md hover:shadow-lg transition-all"
+                      style={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        WebkitBackdropFilter: 'blur(10px)',
+                        color: '#FFFFFF',
+                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                      }}
+                    >
+                      もっと見る
+                    </button>
                   )}
-                  {event.location && (
-                    <div className="flex items-center gap-2">
-                      <MapPin size={16} />
-                      <span>{event.location}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <Users size={16} />
-                    <span>募集人数: {event.maxParticipants === 21 ? '21人〜' : `${event.maxParticipants}人`}</span>
-                  </div>
-                  {event.deadline && (
-                    <div className="flex items-center gap-2">
-                      <Clock size={16} />
-                      <span>締切: {formatDateTime(event.deadline)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* PC: 右サイドバー - イベント情報カード */}
+          <div className="hidden lg:block w-80 flex-shrink-0">
+            <div className="sticky top-4">
+              <EventInfoCard />
+            </div>
+          </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function EventInfoCard() {
+  return (
+    <div className="rounded-2xl p-6 shadow-lg" style={{
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.3)'
+    }}>
+      <h3 className="text-lg font-bold mb-4" style={{color: '#FFFFFF'}}>📢 イベント情報</h3>
+      
+      <div className="text-center py-12">
+        <div className="text-4xl mb-4">📅</div>
+        <p className="text-base font-medium" style={{color: '#FFFFFF', opacity: 0.9}}>
+          掲載イベント募集中
+        </p>
+        <p className="text-sm mt-2" style={{color: '#FFFFFF', opacity: 0.7}}>
+          あなたのイベントを<br />こちらに掲載しませんか？
+        </p>
       </div>
     </div>
   );
@@ -661,13 +755,13 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime }) {
 
             <div>
               <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
-                連絡先（LINE ID / メールアドレス）*
+                連絡先（LINE / Instagram / X / メール等）*
               </label>
               <input
                 type="text"
                 value={formData.contact}
                 onChange={(e) => setFormData({...formData, contact: e.target.value})}
-                placeholder="例：line_id123 または email@example.com"
+                placeholder="例：@your_instagram または LINE ID: abc123"
                 className="w-full px-4 py-3 rounded-xl"
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.15)',
@@ -841,6 +935,41 @@ function EventDetailView({ event, applications, onSelectApplicant, onShare, onBa
               })}
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ApplicationSuccessView({ onBackToHome }) {
+  return (
+    <div className="min-h-screen p-4 flex items-center justify-center" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
+      <div className="max-w-md mx-auto text-center">
+        <div className="rounded-2xl p-8 shadow-lg" style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)'
+        }}>
+          <div className="text-6xl mb-6">🎉</div>
+          <h2 className="text-3xl font-bold mb-4" style={{color: '#FFFFFF'}}>応募完了！</h2>
+          <p className="text-lg mb-6" style={{color: '#FFFFFF', opacity: 0.9}}>
+            応募が完了しました。<br />
+            主催者が選択した場合、登録した連絡先に通知が届きます。
+          </p>
+          <button
+            onClick={onBackToHome}
+            className="w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+            style={{
+              backgroundColor: 'rgba(255, 255, 255, 0.25)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              color: '#FFFFFF',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }}
+          >
+            ホームに戻る
+          </button>
         </div>
       </div>
     </div>
