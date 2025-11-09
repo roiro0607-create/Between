@@ -1,11 +1,89 @@
 // API呼び出し用のヘルパー関数
+import Cookies from 'js-cookie';
 
 const API_BASE_URL = import.meta.env.PROD ? '/api' : '/api';
 
+// 認証トークンを取得
+function getAuthToken() {
+  return Cookies.get('auth_token');
+}
+
+// 認証ヘッダーを取得
+function getAuthHeaders() {
+  const token = getAuthToken();
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
+}
+
 export const api = {
+  // 認証関連
+  async register(userData) {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to register');
+    }
+    const data = await response.json();
+    // トークンをCookieに保存
+    Cookies.set('auth_token', data.token, { expires: 30 });
+    return data;
+  },
+
+  async login(credentials) {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to login');
+    }
+    const data = await response.json();
+    // トークンをCookieに保存
+    Cookies.set('auth_token', data.token, { expires: 30 });
+    return data;
+  },
+
+  async getCurrentUser() {
+    const token = getAuthToken();
+    if (!token) return null;
+
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: {
+        ...getAuthHeaders(),
+      },
+    });
+    if (!response.ok) {
+      Cookies.remove('auth_token');
+      return null;
+    }
+    const data = await response.json();
+    return data.user;
+  },
+
+  logout() {
+    Cookies.remove('auth_token');
+  },
+
   // イベント関連
-  async getEvents() {
-    const response = await fetch(`${API_BASE_URL}/events`);
+  async getEvents(userId = null) {
+    const url = userId
+      ? `${API_BASE_URL}/events?userId=${userId}`
+      : `${API_BASE_URL}/events`;
+
+    const response = await fetch(url, {
+      headers: {
+        ...getAuthHeaders(),
+      },
+    });
     if (!response.ok) throw new Error('Failed to fetch events');
     return response.json();
   },
@@ -15,6 +93,7 @@ export const api = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
       },
       body: JSON.stringify(eventData),
     });

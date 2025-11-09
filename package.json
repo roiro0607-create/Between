@@ -9,6 +9,9 @@
     },
     "dependencies": {
         "@vercel/kv": "^3.0.0",
+        "bcryptjs": "^3.0.3",
+        "js-cookie": "^3.0.5",
+        "jsonwebtoken": "^9.0.2",
         "lucide-react": "^0.263.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"

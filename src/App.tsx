@@ -7,6 +7,8 @@ export default function EventMatchingApp() {
   const [events, setEvents] = useState([]);
   const [currentEvent, setCurrentEvent] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
   // イベントのステータスを判定する関数
   const getEventStatus = (event) => {
@@ -50,8 +52,50 @@ export default function EventMatchingApp() {
     `;
     document.head.appendChild(style);
 
+    // 認証状態をチェック
+    checkAuth();
+
     loadData();
   }, []);
+
+  const checkAuth = async () => {
+    try {
+      const user = await api.getCurrentUser();
+      setCurrentUser(user);
+    } catch (error) {
+      console.error('認証チェックエラー:', error);
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  };
+
+  const handleRegister = async (userData) => {
+    try {
+      const { user } = await api.register(userData);
+      setCurrentUser(user);
+      setView('home');
+    } catch (error) {
+      console.error('登録エラー:', error);
+      throw error;
+    }
+  };
+
+  const handleLogin = async (credentials) => {
+    try {
+      const { user } = await api.login(credentials);
+      setCurrentUser(user);
+      setView('home');
+    } catch (error) {
+      console.error('ログインエラー:', error);
+      throw error;
+    }
+  };
+
+  const handleLogout = () => {
+    api.logout();
+    setCurrentUser(null);
+    setView('home');
+  };
 
   const loadData = async () => {
     try {
@@ -228,6 +272,34 @@ export default function EventMatchingApp() {
     }} />
   );
 
+  if (view === 'register') {
+    return (
+      <>
+        <MarbleBackground />
+        <GlassOverlay />
+        <RegisterView
+          onRegister={handleRegister}
+          onBack={() => setView('home')}
+          onSwitchToLogin={() => setView('login')}
+        />
+      </>
+    );
+  }
+
+  if (view === 'login') {
+    return (
+      <>
+        <MarbleBackground />
+        <GlassOverlay />
+        <LoginView
+          onLogin={handleLogin}
+          onBack={() => setView('home')}
+          onSwitchToRegister={() => setView('register')}
+        />
+      </>
+    );
+  }
+
   if (view === 'home') {
     return (
       <>
@@ -235,8 +307,12 @@ export default function EventMatchingApp() {
         <GlassOverlay />
         <HomeView
           events={events}
+          currentUser={currentUser}
           onCreateNew={() => setView('create')}
           onViewEvent={viewEventDetail}
+          onLogin={() => setView('login')}
+          onRegister={() => setView('register')}
+          onLogout={handleLogout}
           formatDateTime={formatDateTime}
           getEventStatus={getEventStatus}
         />
@@ -302,11 +378,17 @@ export default function EventMatchingApp() {
   }
 }
 
-function HomeView({ events, onCreateNew, onViewEvent, formatDateTime, getEventStatus }) {
+function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRegister, onLogout, formatDateTime, getEventStatus }) {
   const [displayCount, setDisplayCount] = useState(10);
+  const [activeTab, setActiveTab] = useState('all'); // 'all' or 'my'
+
+  // タブに応じてイベントをフィルタリング
+  const filteredEvents = activeTab === 'my' && currentUser
+    ? events.filter(event => event.creatorId === currentUser.id)
+    : events;
 
   // 新着順（createdAtで降順）にソート
-  const sortedEvents = [...events].sort((a, b) => {
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
@@ -321,16 +403,73 @@ function HomeView({ events, onCreateNew, onViewEvent, formatDateTime, getEventSt
   return (
     <div className="min-h-screen p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8 pt-8">
-          <h1 className="text-6xl mb-3" style={{
-            fontFamily: "'Elns Sans', sans-serif",
-            fontWeight: 600,
-            color: '#FFFFFF',
-            letterSpacing: '1px',
-            textShadow: '0 2px 20px rgba(0,0,0,0.1)'
-          }}>
-            Between
-          </h1>
+        {/* ヘッダー */}
+        <div className="flex justify-between items-center mb-6 pt-4">
+          <div className="flex-1"></div>
+          <div className="flex-1 text-center">
+            <h1 className="text-5xl" style={{
+              fontFamily: "'Elns Sans', sans-serif",
+              fontWeight: 600,
+              color: '#FFFFFF',
+              letterSpacing: '1px',
+              textShadow: '0 2px 20px rgba(0,0,0,0.1)'
+            }}>
+              Between
+            </h1>
+          </div>
+          <div className="flex-1 flex justify-end gap-3">
+            {currentUser ? (
+              <>
+                <div className="px-4 py-2 rounded-xl" style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  {currentUser.name}
+                </div>
+                <button
+                  onClick={onLogout}
+                  className="px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  ログアウト
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={onLogin}
+                  className="px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  ログイン
+                </button>
+                <button
+                  onClick={onRegister}
+                  className="px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  新規登録
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="text-center mb-8">
           <p className="text-lg" style={{color: '#FFFFFF'}}>やりたいことを投稿して、仲間を見つけよう</p>
         </div>
 
@@ -350,6 +489,34 @@ function HomeView({ events, onCreateNew, onViewEvent, formatDateTime, getEventSt
             >
               ＋ 新しいイベントを作る
             </button>
+
+            {/* タブ切り替え */}
+            {currentUser && (
+              <div className="flex gap-2 mb-6">
+                <button
+                  onClick={() => setActiveTab('all')}
+                  className="flex-1 py-3 rounded-xl font-medium transition-all"
+                  style={{
+                    backgroundColor: activeTab === 'all' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.15)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  すべてのイベント
+                </button>
+                <button
+                  onClick={() => setActiveTab('my')}
+                  className="flex-1 py-3 rounded-xl font-medium transition-all"
+                  style={{
+                    backgroundColor: activeTab === 'my' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.15)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  マイイベント
+                </button>
+              </div>
+            )}
 
             <div className="space-y-4">
               {displayedEvents.length === 0 ? (
@@ -1005,6 +1172,287 @@ function ApplicationSuccessView({ onBackToHome }) {
           >
             ホームに戻る
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RegisterView({ onRegister, onBack, onSwitchToLogin }) {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    name: '',
+    age: ''
+  });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    setError('');
+
+    if (!formData.email || !formData.password || !formData.name || !formData.age) {
+      setError('すべての項目を入力してください');
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('パスワードは6文字以上にしてください');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await onRegister(formData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
+      <div className="max-w-md mx-auto pt-8">
+        <button onClick={onBack} className="mb-6 font-medium" style={{color: '#FFFFFF'}}>← 戻る</button>
+
+        <div className="rounded-2xl p-6 shadow-lg" style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)'
+        }}>
+          <h2 className="text-2xl font-bold mb-6 text-center" style={{color: '#FFFFFF'}}>新規登録</h2>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-xl" style={{
+              backgroundColor: 'rgba(255, 100, 100, 0.3)',
+              border: '1px solid rgba(255, 100, 100, 0.5)',
+              color: '#FFFFFF'
+            }}>
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                お名前 *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="例：田中太郎"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                メールアドレス *
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="例：tanaka@example.com"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                パスワード *
+              </label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                placeholder="6文字以上"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                年齢 *
+              </label>
+              <input
+                type="number"
+                value={formData.age}
+                onChange={(e) => setFormData({...formData, age: e.target.value})}
+                placeholder="例：25"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+              style={{
+                backgroundColor: isLoading ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                opacity: isLoading ? 0.7 : 1,
+                cursor: isLoading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isLoading ? '登録中...' : '登録する'}
+            </button>
+
+            <div className="text-center pt-4">
+              <button
+                onClick={onSwitchToLogin}
+                className="text-sm font-medium hover:opacity-80 transition-opacity"
+                style={{color: '#FFFFFF'}}
+              >
+                既にアカウントをお持ちの方はこちら
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LoginView({ onLogin, onBack, onSwitchToRegister }) {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    setError('');
+
+    if (!formData.email || !formData.password) {
+      setError('メールアドレスとパスワードを入力してください');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await onLogin(formData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
+      <div className="max-w-md mx-auto pt-8">
+        <button onClick={onBack} className="mb-6 font-medium" style={{color: '#FFFFFF'}}>← 戻る</button>
+
+        <div className="rounded-2xl p-6 shadow-lg" style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)'
+        }}>
+          <h2 className="text-2xl font-bold mb-6 text-center" style={{color: '#FFFFFF'}}>ログイン</h2>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-xl" style={{
+              backgroundColor: 'rgba(255, 100, 100, 0.3)',
+              border: '1px solid rgba(255, 100, 100, 0.5)',
+              color: '#FFFFFF'
+            }}>
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                メールアドレス *
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="例：tanaka@example.com"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                パスワード *
+              </label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                placeholder="パスワードを入力"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+              style={{
+                backgroundColor: isLoading ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                opacity: isLoading ? 0.7 : 1,
+                cursor: isLoading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isLoading ? 'ログイン中...' : 'ログイン'}
+            </button>
+
+            <div className="text-center pt-4">
+              <button
+                onClick={onSwitchToRegister}
+                className="text-sm font-medium hover:opacity-80 transition-opacity"
+                style={{color: '#FFFFFF'}}
+              >
+                アカウントをお持ちでない方はこちら
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
