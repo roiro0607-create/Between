@@ -474,8 +474,11 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
     ? events.filter(event => event.creatorId === currentUser.id)
     : events;
 
+  // 終了したイベントを除外
+  const activeEvents = filteredEvents.filter(event => getEventStatus(event) !== 'closed');
+
   // 新着順（createdAtで降順）にソート
-  const sortedEvents = [...filteredEvents].sort((a, b) => {
+  const sortedEvents = [...activeEvents].sort((a, b) => {
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
 
