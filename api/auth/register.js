@@ -20,7 +20,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email, password, name, age } = req.body;
+    const { email, password, name, age, profileImage } = req.body;
 
     // バリデーション
     if (!email || !password || !name || !age) {
@@ -50,6 +50,7 @@ export default async function handler(req, res) {
       password: hashedPassword,
       name,
       age: parseInt(age),
+      profileImage: profileImage || '',
       createdAt: new Date().toISOString()
     };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, Share2, Check, Clock, Send } from 'lucide-react';
+import { Calendar, MapPin, Users, Share2, Check, Clock, Send, User } from 'lucide-react';
 import { api } from './api';
+import { resizeAndConvertToBase64 } from './utils/imageUtils';
 
 export default function EventMatchingApp() {
   const [view, setView] = useState('home');
@@ -420,13 +421,25 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
           <div className="flex-1 flex justify-end gap-3">
             {currentUser ? (
               <>
-                <div className="px-4 py-2 rounded-xl" style={{
+                <div className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center'
+                  border: '1px solid rgba(255, 255, 255, 0.3)'
                 }}>
-                  {currentUser.name}
+                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {currentUser.profileImage ? (
+                      <img src={currentUser.profileImage} alt={currentUser.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User size={20} style={{color: 'rgba(255, 255, 255, 0.7)'}} />
+                    )}
+                  </div>
+                  <span className="font-medium">{currentUser.name}</span>
                 </div>
                 <button
                   onClick={onLogout}
@@ -1183,10 +1196,25 @@ function RegisterView({ onRegister, onBack, onSwitchToLogin }) {
     email: '',
     password: '',
     name: '',
-    age: ''
+    age: '',
+    profileImage: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState('');
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const base64 = await resizeAndConvertToBase64(file);
+      setFormData({...formData, profileImage: base64});
+      setImagePreview(base64);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   const handleSubmit = async () => {
     setError('');
@@ -1235,6 +1263,43 @@ function RegisterView({ onRegister, onBack, onSwitchToLogin }) {
           )}
 
           <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2 text-center" style={{color: '#FFFFFF'}}>
+                プロフィール画像
+              </label>
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-32 h-32 rounded-full overflow-hidden" style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="プロフィール" className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={48} style={{color: 'rgba(255, 255, 255, 0.5)'}} />
+                  )}
+                </div>
+                <label className="px-4 py-2 rounded-xl font-medium cursor-pointer hover:opacity-90 transition-all" style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.3)'
+                }}>
+                  画像を選択
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+                <p className="text-xs text-center" style={{color: '#FFFFFF', opacity: 0.7}}>
+                  JPG, PNG（5MB以下）
+                </p>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
                 お名前 *
