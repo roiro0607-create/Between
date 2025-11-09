@@ -98,6 +98,17 @@ export default function EventMatchingApp() {
     setView('home');
   };
 
+  const handleUpdateProfile = async (profileData) => {
+    try {
+      const updatedUser = await api.updateProfile(profileData);
+      setCurrentUser(updatedUser);
+      setView('home');
+    } catch (error) {
+      console.error('プロフィール更新エラー:', error);
+      throw error;
+    }
+  };
+
   const loadData = async () => {
     try {
       const loadedEvents = await api.getEvents();
@@ -273,6 +284,20 @@ export default function EventMatchingApp() {
     }} />
   );
 
+  if (view === 'profile') {
+    return (
+      <>
+        <MarbleBackground />
+        <GlassOverlay />
+        <ProfileView
+          user={currentUser}
+          onUpdate={handleUpdateProfile}
+          onBack={() => setView('home')}
+        />
+      </>
+    );
+  }
+
   if (view === 'register') {
     return (
       <>
@@ -421,11 +446,15 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
           <div className="flex-1 flex justify-end gap-3">
             {currentUser ? (
               <>
-                <div className="flex items-center gap-3 px-3 py-2 rounded-xl" style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  color: '#FFFFFF',
-                  border: '1px solid rgba(255, 255, 255, 0.3)'
-                }}>
+                <button
+                  onClick={() => setView('profile')}
+                  className="flex items-center gap-3 px-3 py-2 rounded-xl hover:opacity-90 transition-all cursor-pointer"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}
+                >
                   <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.15)',
                     border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -440,7 +469,7 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
                     )}
                   </div>
                   <span className="font-medium">{currentUser.name}</span>
-                </div>
+                </button>
                 <button
                   onClick={onLogout}
                   className="px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
@@ -1517,6 +1546,186 @@ function LoginView({ onLogin, onBack, onSwitchToRegister }) {
                 アカウントをお持ちでない方はこちら
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileView({ user, onUpdate, onBack }) {
+  const [formData, setFormData] = useState({
+    name: user?.name || '',
+    age: user?.age || '',
+    profileImage: user?.profileImage || ''
+  });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(user?.profileImage || '');
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const base64 = await resizeAndConvertToBase64(file);
+      setFormData({...formData, profileImage: base64});
+      setImagePreview(base64);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleSubmit = async () => {
+    setError('');
+
+    if (!formData.name || !formData.age) {
+      setError('名前と年齢は必須です');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await onUpdate(formData);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
+      <div className="max-w-md mx-auto pt-8">
+        <button onClick={onBack} className="mb-6 font-medium" style={{color: '#FFFFFF'}}>← 戻る</button>
+
+        <div className="rounded-2xl p-6 shadow-lg" style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)'
+        }}>
+          <h2 className="text-2xl font-bold mb-6 text-center" style={{color: '#FFFFFF'}}>プロフィール編集</h2>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-xl" style={{
+              backgroundColor: 'rgba(255, 100, 100, 0.3)',
+              border: '1px solid rgba(255, 100, 100, 0.5)',
+              color: '#FFFFFF'
+            }}>
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2 text-center" style={{color: '#FFFFFF'}}>
+                プロフィール画像
+              </label>
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-32 h-32 rounded-full overflow-hidden" style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '2px solid rgba(255, 255, 255, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {imagePreview ? (
+                    <img src={imagePreview} alt="プロフィール" className="w-full h-full object-cover" />
+                  ) : (
+                    <User size={48} style={{color: 'rgba(255, 255, 255, 0.5)'}} />
+                  )}
+                </div>
+                <label className="px-4 py-2 rounded-xl font-medium cursor-pointer hover:opacity-90 transition-all" style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.3)'
+                }}>
+                  画像を変更
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                お名前 *
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="例：田中太郎"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                年齢 *
+              </label>
+              <input
+                type="number"
+                value={formData.age}
+                onChange={(e) => setFormData({...formData, age: e.target.value})}
+                placeholder="例：25"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                メールアドレス
+              </label>
+              <input
+                type="email"
+                value={user?.email || ''}
+                disabled
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  color: '#FFFFFF',
+                  opacity: 0.7,
+                  cursor: 'not-allowed'
+                }}
+              />
+              <p className="text-xs mt-1" style={{color: '#FFFFFF', opacity: 0.7}}>
+                ※ メールアドレスは変更できません
+              </p>
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+              style={{
+                backgroundColor: isLoading ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                opacity: isLoading ? 0.7 : 1,
+                cursor: isLoading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isLoading ? '更新中...' : '更新する'}
+            </button>
           </div>
         </div>
       </div>

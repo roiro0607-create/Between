@@ -73,6 +73,23 @@ export const api = {
     Cookies.remove('auth_token');
   },
 
+  async updateProfile(profileData) {
+    const response = await fetch(`${API_BASE_URL}/auth/update-profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
+      body: JSON.stringify(profileData),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to update profile');
+    }
+    const data = await response.json();
+    return data.user;
+  },
+
   // イベント関連
   async getEvents(userId = null) {
     const url = userId
