@@ -1079,7 +1079,7 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStat
 function EventDetailView({ event, applications, currentUser, onSelectApplicant, onShare, onEdit, onDelete, onBack, formatDateTime, getEventStatus }) {
   if (!event) return null;
 
-  const isEventOwner = currentUser && event.userId === currentUser.id;
+  const isEventOwner = currentUser && event.creatorId === currentUser.id;
   const selectedCount = event.selectedApplicants?.length || 0;
   const canSelectMore = selectedCount < event.maxParticipants;
   const eventStatus = getEventStatus(event);
