@@ -332,6 +332,7 @@ export default function EventMatchingApp() {
         <ProfileView
           user={currentUser}
           onUpdate={handleUpdateProfile}
+          onLogout={handleLogout}
           onBack={() => setView('home')}
         />
       </>
@@ -379,7 +380,6 @@ export default function EventMatchingApp() {
           onLogin={() => setView('login')}
           onRegister={() => setView('register')}
           onProfile={() => setView('profile')}
-          onLogout={handleLogout}
           formatDateTime={formatDateTime}
           getEventStatus={getEventStatus}
         />
@@ -465,7 +465,7 @@ export default function EventMatchingApp() {
   }
 }
 
-function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRegister, onProfile, onLogout, formatDateTime, getEventStatus }) {
+function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRegister, onProfile, formatDateTime, getEventStatus }) {
   const [displayCount, setDisplayCount] = useState(10);
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'my'
 
@@ -506,43 +506,30 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
           </div>
           <div className="flex-1 flex justify-end gap-3">
             {currentUser ? (
-              <>
-                <button
-                  onClick={onProfile}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl hover:opacity-90 transition-all cursor-pointer"
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    color: '#FFFFFF',
-                    border: '1px solid rgba(255, 255, 255, 0.3)'
-                  }}
-                >
-                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    {currentUser.profileImage ? (
-                      <img src={currentUser.profileImage} alt={currentUser.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <User size={20} style={{color: 'rgba(255, 255, 255, 0.7)'}} />
-                    )}
-                  </div>
-                  <span className="font-medium">{currentUser.name}</span>
-                </button>
-                <button
-                  onClick={onLogout}
-                  className="px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                    color: '#FFFFFF',
-                    border: '1px solid rgba(255, 255, 255, 0.3)'
-                  }}
-                >
-                  ログアウト
-                </button>
-              </>
+              <button
+                onClick={onProfile}
+                className="rounded-full hover:opacity-90 transition-all cursor-pointer"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  padding: '2px'
+                }}
+              >
+                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{
+                  backgroundColor: '#9CA3AF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {currentUser.profileImage ? (
+                    <img src={currentUser.profileImage} alt="プロフィール" className="w-full h-full object-cover" />
+                  ) : (
+                    <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#666666"/>
+                    </svg>
+                  )}
+                </div>
+              </button>
             ) : (
               <>
                 <button
@@ -1663,7 +1650,7 @@ function LoginView({ onLogin, onBack, onSwitchToRegister }) {
   );
 }
 
-function ProfileView({ user, onUpdate, onBack }) {
+function ProfileView({ user, onUpdate, onLogout, onBack }) {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     age: user?.age || '',
@@ -1835,6 +1822,20 @@ function ProfileView({ user, onUpdate, onBack }) {
               }}
             >
               {isLoading ? '更新中...' : '更新する'}
+            </button>
+
+            <button
+              onClick={onLogout}
+              className="w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all mt-4"
+              style={{
+                backgroundColor: 'rgba(255, 100, 100, 0.25)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 100, 100, 0.3)'
+              }}
+            >
+              ログアウト
             </button>
           </div>
         </div>
