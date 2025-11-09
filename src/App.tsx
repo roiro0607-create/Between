@@ -207,8 +207,14 @@ export default function EventMatchingApp() {
 
   const viewEventDetail = (event) => {
     setCurrentEvent(event);
-    loadEventApplications(event.id);
-    setView('event-detail');
+
+    // 自分が作成したイベントの場合は詳細画面、他人のイベントの場合は応募画面
+    if (currentUser && event.creatorId === currentUser.id) {
+      loadEventApplications(event.id);
+      setView('event-detail');
+    } else {
+      setView('apply');
+    }
   };
 
   const handleDeleteEvent = async (eventId) => {
