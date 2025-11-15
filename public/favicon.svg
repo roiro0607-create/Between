@@ -1,0 +1,26 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- グラデーション背景 -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4C80B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6F5A52;stop-opacity:1" />
+    </linearGradient>
+    <filter id="blur">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" />
+    </filter>
+  </defs>
+
+  <!-- 背景円 -->
+  <circle cx="32" cy="32" r="30" fill="url(#bgGradient)"/>
+
+  <!-- グラスモーフィズム効果のレイヤー -->
+  <circle cx="32" cy="32" r="30" fill="rgba(255, 255, 255, 0.15)" filter="url(#blur)"/>
+
+  <!-- "B" の文字 -->
+  <text x="32" y="45"
+        font-family="'Arial', sans-serif"
+        font-size="36"
+        font-weight="bold"
+        fill="white"
+        text-anchor="middle">B</text>
+</svg>
