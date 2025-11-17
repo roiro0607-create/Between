@@ -774,6 +774,18 @@ function EventInfoCard() {
         <p className="text-sm mt-2" style={{color: '#FFFFFF', opacity: 0.7}}>
           あなたのイベントを<br />こちらに掲載しませんか？
         </p>
+        <p className="text-sm mt-4" style={{color: '#FFFFFF', opacity: 0.8}}>
+          <a
+            href="https://www.threads.net/@limi_designlife"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:opacity-100 transition-opacity"
+            style={{color: '#FFFFFF', textDecoration: 'underline'}}
+          >
+            @limi_designlife
+          </a>
+          のThreadsか<br />InstagramのDMまでご連絡ください
+        </p>
       </div>
     </div>
   );
