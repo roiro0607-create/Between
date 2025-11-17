@@ -1709,7 +1709,7 @@ function LoginView({ onLogin, onBack, onSwitchToRegister, onSwitchToReset }) {
                 className="text-sm font-medium hover:opacity-80 transition-opacity block w-full"
                 style={{color: '#FFFFFF'}}
               >
-                パスワードを忘れた方はこちら
+                パスワードを忘れた人はこちら
               </button>
               <button
                 onClick={onSwitchToRegister}
