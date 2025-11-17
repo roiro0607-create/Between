@@ -29,8 +29,8 @@ export const api = {
       throw new Error(error.error || 'Failed to register');
     }
     const data = await response.json();
-    // トークンをCookieに保存
-    Cookies.set('auth_token', data.token, { expires: 30 });
+    // トークンをCookieに保存（5年間有効）
+    Cookies.set('auth_token', data.token, { expires: 1825 });
     return data;
   },
 
@@ -47,8 +47,8 @@ export const api = {
       throw new Error(error.error || 'Failed to login');
     }
     const data = await response.json();
-    // トークンをCookieに保存
-    Cookies.set('auth_token', data.token, { expires: 30 });
+    // トークンをCookieに保存（5年間有効）
+    Cookies.set('auth_token', data.token, { expires: 1825 });
     return data;
   },
 
