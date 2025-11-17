@@ -24,11 +24,23 @@ export const api = {
       },
       body: JSON.stringify(userData),
     });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to register');
+
+    // レスポンステキストを取得
+    const text = await response.text();
+
+    // JSONパースを試みる
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('JSONパースエラー:', text);
+      throw new Error('サーバーからの応答が無効です。管理者に連絡してください。');
     }
-    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to register');
+    }
+
     // トークンをCookieに保存（5年間有効）
     Cookies.set('auth_token', data.token, { expires: 1825 });
     return data;
@@ -42,11 +54,23 @@ export const api = {
       },
       body: JSON.stringify(credentials),
     });
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to login');
+
+    // レスポンステキストを取得
+    const text = await response.text();
+
+    // JSONパースを試みる
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('JSONパースエラー:', text);
+      throw new Error('サーバーからの応答が無効です。管理者に連絡してください。');
     }
-    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to login');
+    }
+
     // トークンをCookieに保存（5年間有効）
     Cookies.set('auth_token', data.token, { expires: 1825 });
     return data;
