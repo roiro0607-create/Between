@@ -314,13 +314,13 @@ export default function EventMatchingApp() {
       bottom: 0,
       zIndex: -2,
       background: `
-        radial-gradient(circle at 20% 50%, #4C80B0 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, #6F5A52 0%, transparent 50%),
-        radial-gradient(circle at 40% 20%, #4C80B0 0%, transparent 50%),
-        radial-gradient(circle at 90% 30%, #6F5A52 0%, transparent 50%),
-        radial-gradient(circle at 10% 80%, #4C80B0 0%, transparent 50%),
-        radial-gradient(circle at 60% 60%, #6F5A52 0%, transparent 50%),
-        linear-gradient(135deg, #4C80B0 0%, #6F5A52 100%)
+        radial-gradient(circle at 20% 50%, #D9CFC1 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, #B67352 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, #EBE5D9 0%, transparent 50%),
+        radial-gradient(circle at 90% 30%, #A0522D 0%, transparent 50%),
+        radial-gradient(circle at 10% 80%, #F5F1E8 0%, transparent 50%),
+        radial-gradient(circle at 60% 60%, #8B6F47 0%, transparent 50%),
+        linear-gradient(135deg, #F5F1E8 0%, #D9CFC1 50%, #B67352 100%)
       `
     }} />
   );
@@ -333,7 +333,7 @@ export default function EventMatchingApp() {
       right: 0,
       bottom: 0,
       zIndex: -1,
-      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      backgroundColor: 'rgba(255, 250, 245, 0.2)',
       backdropFilter: 'blur(80px)',
       WebkitBackdropFilter: 'blur(80px)'
     }} />
@@ -781,7 +781,7 @@ function EventInfoCard() {
             rel="noopener noreferrer"
             className="transition-colors"
             style={{color: '#FFFFFF', textDecoration: 'underline'}}
-            onMouseEnter={(e) => e.currentTarget.style.color = '#4C80B0'}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#A0522D'}
             onMouseLeave={(e) => e.currentTarget.style.color = '#FFFFFF'}
           >
             @limi_designlife
