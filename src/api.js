@@ -97,6 +97,34 @@ export const api = {
     Cookies.remove('auth_token');
   },
 
+  async resetPassword(email, newPassword) {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, newPassword }),
+    });
+
+    // レスポンステキストを取得
+    const text = await response.text();
+
+    // JSONパースを試みる
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error('JSONパースエラー:', text);
+      throw new Error('サーバーからの応答が無効です。管理者に連絡してください。');
+    }
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to reset password');
+    }
+
+    return data;
+  },
+
   async updateProfile(profileData) {
     const response = await fetch(`${API_BASE_URL}/auth/update-profile`, {
       method: 'PUT',

@@ -98,6 +98,15 @@ export default function EventMatchingApp() {
     setView('home');
   };
 
+  const handleResetPassword = async (email, newPassword) => {
+    try {
+      await api.resetPassword(email, newPassword);
+    } catch (error) {
+      console.error('パスワードリセットエラー:', error);
+      throw error;
+    }
+  };
+
   const handleUpdateProfile = async (profileData) => {
     try {
       const updatedUser = await api.updateProfile(profileData);
@@ -368,6 +377,21 @@ export default function EventMatchingApp() {
           onLogin={handleLogin}
           onBack={() => setView('home')}
           onSwitchToRegister={() => setView('register')}
+          onSwitchToReset={() => setView('reset-password')}
+        />
+      </>
+    );
+  }
+
+  if (view === 'reset-password') {
+    return (
+      <>
+        <MarbleBackground />
+        <GlassOverlay />
+        <ResetPasswordView
+          onResetPassword={handleResetPassword}
+          onBack={() => setView('home')}
+          onSwitchToLogin={() => setView('login')}
         />
       </>
     );
@@ -1565,7 +1589,7 @@ function RegisterView({ onRegister, onBack, onSwitchToLogin }) {
   );
 }
 
-function LoginView({ onLogin, onBack, onSwitchToRegister }) {
+function LoginView({ onLogin, onBack, onSwitchToRegister, onSwitchToReset }) {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -1679,13 +1703,195 @@ function LoginView({ onLogin, onBack, onSwitchToRegister }) {
               {isLoading ? 'ログイン中...' : 'ログイン'}
             </button>
 
-            <div className="text-center pt-4">
+            <div className="text-center pt-4 space-y-2">
+              <button
+                onClick={onSwitchToReset}
+                className="text-sm font-medium hover:opacity-80 transition-opacity block w-full"
+                style={{color: '#FFFFFF'}}
+              >
+                パスワードを忘れた方はこちら
+              </button>
               <button
                 onClick={onSwitchToRegister}
                 className="text-sm font-medium hover:opacity-80 transition-opacity"
                 style={{color: '#FFFFFF'}}
               >
                 アカウントをお持ちでない方はこちら
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResetPasswordView({ onResetPassword, onBack, onSwitchToLogin }) {
+  const [formData, setFormData] = useState({
+    email: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleSubmit = async () => {
+    setError('');
+    setSuccess('');
+
+    if (!formData.email || !formData.newPassword || !formData.confirmPassword) {
+      setError('すべての項目を入力してください');
+      return;
+    }
+
+    if (formData.newPassword !== formData.confirmPassword) {
+      setError('パスワードが一致しません');
+      return;
+    }
+
+    if (formData.newPassword.length < 6) {
+      setError('パスワードは6文字以上にしてください');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await onResetPassword(formData.email, formData.newPassword);
+      setSuccess('パスワードをリセットしました！新しいパスワードでログインしてください。');
+      setTimeout(() => {
+        onSwitchToLogin();
+      }, 2000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
+      <div className="max-w-md mx-auto pt-8">
+        <button onClick={onBack} className="mb-6 font-medium" style={{color: '#FFFFFF'}}>← 戻る</button>
+
+        <div className="rounded-2xl p-6 shadow-lg" style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)'
+        }}>
+          <h2 className="text-2xl font-bold mb-6 text-center" style={{color: '#FFFFFF'}}>パスワードリセット</h2>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-xl" style={{
+              backgroundColor: 'rgba(255, 100, 100, 0.3)',
+              border: '1px solid rgba(255, 100, 100, 0.5)',
+              color: '#FFFFFF'
+            }}>
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-3 rounded-xl" style={{
+              backgroundColor: 'rgba(100, 255, 100, 0.3)',
+              border: '1px solid rgba(100, 255, 100, 0.5)',
+              color: '#FFFFFF'
+            }}>
+              {success}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                メールアドレス *
+              </label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="登録済みのメールアドレス"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                新しいパスワード *
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={formData.newPassword}
+                  onChange={(e) => setFormData({...formData, newPassword: e.target.value})}
+                  placeholder="6文字以上"
+                  className="w-full px-4 py-3 rounded-xl pr-12"
+                  style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    color: '#FFFFFF'
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  style={{color: '#FFFFFF', opacity: 0.7}}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: '#FFFFFF'}}>
+                新しいパスワード（確認）*
+              </label>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                placeholder="もう一度入力"
+                className="w-full px-4 py-3 rounded-xl"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  color: '#FFFFFF'
+                }}
+              />
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={isLoading}
+              className="w-full py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+              style={{
+                backgroundColor: isLoading ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.25)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                opacity: isLoading ? 0.7 : 1,
+                cursor: isLoading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {isLoading ? 'リセット中...' : 'パスワードをリセット'}
+            </button>
+
+            <div className="text-center pt-4">
+              <button
+                onClick={onSwitchToLogin}
+                className="text-sm font-medium hover:opacity-80 transition-opacity"
+                style={{color: '#FFFFFF'}}
+              >
+                ログイン画面に戻る
               </button>
             </div>
           </div>
