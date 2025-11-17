@@ -779,8 +779,10 @@ function EventInfoCard() {
             href="https://www.threads.net/@limi_designlife"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:opacity-100 transition-opacity"
+            className="transition-colors"
             style={{color: '#FFFFFF', textDecoration: 'underline'}}
+            onMouseEnter={(e) => e.currentTarget.style.color = '#4C80B0'}
+            onMouseLeave={(e) => e.currentTarget.style.color = '#FFFFFF'}
           >
             @limi_designlife
           </a>
