@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, Share2, Check, Clock, Send, User, Eye, EyeOff, Menu, X, LogOut } from 'lucide-react';
+import { Calendar, MapPin, Users, Share2, Check, Clock, Send, User, Eye, EyeOff, X } from 'lucide-react';
 import { api } from './api';
 import { resizeAndConvertToBase64 } from './utils/imageUtils';
 
@@ -555,7 +555,10 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
               {isMobileMenuOpen ? (
                 <X size={24} color="#FFFFFF" />
               ) : (
-                <Menu size={24} color="#FFFFFF" />
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <line x1="4" y1="8" x2="20" y2="8" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="4" y1="16" x2="20" y2="16" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
               )}
             </button>
           </div>
