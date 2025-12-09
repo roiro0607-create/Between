@@ -1,27 +1,38 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- グラデーション背景 -->
   <defs>
+    <!-- ナチュラルなグラデーション -->
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#F5F1E8;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#D9CFC1;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#B67352;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D9CFC1;stop-opacity:1" />
     </linearGradient>
-    <filter id="blur">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="0.5" />
+
+    <!-- ソフトシャドウ -->
+    <filter id="softShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.5"/>
+      <feOffset dx="0" dy="1" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.2"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
 
-  <!-- 背景円 -->
-  <circle cx="32" cy="32" r="30" fill="url(#bgGradient)"/>
+  <!-- 背景 -->
+  <rect width="64" height="64" rx="14" fill="url(#bgGradient)"/>
 
-  <!-- グラスモーフィズム効果のレイヤー -->
-  <circle cx="32" cy="32" r="30" fill="rgba(255, 250, 245, 0.15)" filter="url(#blur)"/>
-
-  <!-- "B" の文字 -->
+  <!-- "B" の文字 - ナチュラルでエレガントなスタイル -->
   <text x="32" y="45"
-        font-family="'Arial', sans-serif"
-        font-size="36"
-        font-weight="bold"
+        font-family="'Georgia', 'Times New Roman', serif"
+        font-size="38"
+        font-weight="600"
         fill="#4A3428"
-        text-anchor="middle">B</text>
+        text-anchor="middle"
+        filter="url(#softShadow)">B</text>
+
+  <!-- アクセントの小さな装飾 -->
+  <circle cx="46" cy="22" r="2.5" fill="#B67352" opacity="0.6"/>
+  <circle cx="18" cy="50" r="2" fill="#B67352" opacity="0.4"/>
 </svg>

@@ -1,0 +1,106 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 背景のナチュラルなグラデーション -->
+    <linearGradient id="mainBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5F1E8;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#E8DFD3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D9CFC1;stop-opacity:1" />
+    </linearGradient>
+
+    <!-- アクセントグラデーション -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#B67352;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#D4A895;stop-opacity:0.6" />
+    </linearGradient>
+
+    <!-- ソフトシャドウ -->
+    <filter id="textShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.15"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1200" height="630" fill="url(#mainBg)"/>
+
+  <!-- 装飾的な円形要素 - ナチュラルな雰囲気 -->
+  <circle cx="150" cy="100" r="100" fill="#B67352" opacity="0.08"/>
+  <circle cx="1050" cy="530" r="120" fill="#B67352" opacity="0.06"/>
+  <circle cx="950" cy="150" r="80" fill="#D4A895" opacity="0.1"/>
+  <circle cx="200" cy="500" r="90" fill="#D4A895" opacity="0.08"/>
+
+  <!-- トップのアクセントライン -->
+  <rect x="0" y="0" width="1200" height="8" fill="url(#accentGradient)"/>
+
+  <!-- ロゴマーク (大きな "B") -->
+  <g transform="translate(100, 150)">
+    <circle cx="60" cy="60" r="60" fill="#FFFFFF" opacity="0.9"/>
+    <text x="60" y="92"
+          font-family="'Georgia', 'Times New Roman', serif"
+          font-size="72"
+          font-weight="600"
+          fill="#4A3428"
+          text-anchor="middle">B</text>
+  </g>
+
+  <!-- メインタイトル "Between" -->
+  <text x="220" y="230"
+        font-family="'Georgia', 'Times New Roman', serif"
+        font-size="84"
+        font-weight="700"
+        fill="#4A3428"
+        filter="url(#textShadow)">Between</text>
+
+  <!-- サブタイトル -->
+  <text x="220" y="300"
+        font-family="'Noto Sans JP', sans-serif"
+        font-size="38"
+        font-weight="500"
+        fill="#6B5447"
+        opacity="0.9">気軽に人と繋がるイベントマッチング</text>
+
+  <!-- 説明文 -->
+  <text x="220" y="380"
+        font-family="'Noto Sans JP', sans-serif"
+        font-size="26"
+        font-weight="400"
+        fill="#7A6A5D"
+        opacity="0.85">興味のあるイベントで新しい出会いを創る</text>
+
+  <!-- 特徴を表すアイコン風の装飾 -->
+  <g transform="translate(220, 440)">
+    <!-- カフェ -->
+    <circle cx="20" cy="20" r="18" fill="#B67352" opacity="0.2"/>
+    <text x="20" y="28" font-size="20" text-anchor="middle">☕</text>
+    <text x="55" y="28"
+          font-family="'Noto Sans JP', sans-serif"
+          font-size="20"
+          fill="#6B5447">カフェ</text>
+
+    <!-- グルメ -->
+    <circle cx="180" cy="20" r="18" fill="#B67352" opacity="0.2"/>
+    <text x="180" y="28" font-size="20" text-anchor="middle">🍽️</text>
+    <text x="215" y="28"
+          font-family="'Noto Sans JP', sans-serif"
+          font-size="20"
+          fill="#6B5447">グルメ</text>
+
+    <!-- 趣味 -->
+    <circle cx="340" cy="20" r="18" fill="#B67352" opacity="0.2"/>
+    <text x="340" y="28" font-size="20" text-anchor="middle">🎨</text>
+    <text x="375" y="28"
+          font-family="'Noto Sans JP', sans-serif"
+          font-size="20"
+          fill="#6B5447">趣味</text>
+  </g>
+
+  <!-- ボトムのアクセント -->
+  <rect x="220" y="540" width="150" height="4" fill="#B67352" opacity="0.4" rx="2"/>
+</svg>
