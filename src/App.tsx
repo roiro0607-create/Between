@@ -541,8 +541,25 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
       <div className="max-w-7xl mx-auto">
         {/* ヘッダー */}
         <div className="flex justify-between items-center mb-6 pt-4">
-          {/* PC版: 左側の空白、SP版: ハンバーガーメニュー */}
-          <div className="flex-1">
+          {/* 左側の空白 */}
+          <div className="flex-1"></div>
+
+          {/* ロゴ */}
+          <div className="flex-1 text-center">
+            <h1 className="text-5xl" style={{
+              fontFamily: "'Elns Sans', sans-serif",
+              fontWeight: 600,
+              color: '#FFFFFF',
+              letterSpacing: '1px',
+              textShadow: '0 2px 20px rgba(0,0,0,0.1)'
+            }}>
+              Between
+            </h1>
+          </div>
+
+          {/* PC版: ログイン/登録/プロフィール、SP版: ハンバーガーメニュー */}
+          <div className="flex-1 flex justify-end gap-3">
+            {/* SP版: ハンバーガーメニュー */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 rounded-xl hover:opacity-90 transition-all"
@@ -561,23 +578,8 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
                 </svg>
               )}
             </button>
-          </div>
 
-          {/* ロゴ */}
-          <div className="flex-1 text-center">
-            <h1 className="text-5xl" style={{
-              fontFamily: "'Elns Sans', sans-serif",
-              fontWeight: 600,
-              color: '#FFFFFF',
-              letterSpacing: '1px',
-              textShadow: '0 2px 20px rgba(0,0,0,0.1)'
-            }}>
-              Between
-            </h1>
-          </div>
-
-          {/* PC版: ログイン/登録/プロフィール、SP版: 空白 */}
-          <div className="flex-1 flex justify-end gap-3">
+            {/* PC版: ログイン/登録/プロフィール */}
             {currentUser ? (
               <button
                 onClick={onProfile}
