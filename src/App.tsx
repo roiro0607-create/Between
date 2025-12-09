@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, Share2, Check, Clock, Send, User, Eye, EyeOff } from 'lucide-react';
+import { Calendar, MapPin, Users, Share2, Check, Clock, Send, User, Eye, EyeOff, Menu, X, LogOut } from 'lucide-react';
 import { api } from './api';
 import { resizeAndConvertToBase64 } from './utils/imageUtils';
 
@@ -10,6 +10,7 @@ export default function EventMatchingApp() {
   const [applications, setApplications] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // イベントのステータスを判定する関数
   const getEventStatus = (event) => {
@@ -498,6 +499,7 @@ export default function EventMatchingApp() {
 function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRegister, onProfile, formatDateTime, getEventStatus }) {
   const [displayCount, setDisplayCount] = useState(10);
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'my'
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // タブに応じてイベントをフィルタリング
   const filteredEvents = activeTab === 'my' && currentUser
@@ -539,7 +541,26 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
       <div className="max-w-7xl mx-auto">
         {/* ヘッダー */}
         <div className="flex justify-between items-center mb-6 pt-4">
-          <div className="flex-1"></div>
+          {/* PC版: 左側の空白、SP版: ハンバーガーメニュー */}
+          <div className="flex-1">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-xl hover:opacity-90 transition-all"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                border: '1px solid rgba(255, 255, 255, 0.3)'
+              }}
+              aria-label="メニュー"
+            >
+              {isMobileMenuOpen ? (
+                <X size={24} color="#FFFFFF" />
+              ) : (
+                <Menu size={24} color="#FFFFFF" />
+              )}
+            </button>
+          </div>
+
+          {/* ロゴ */}
           <div className="flex-1 text-center">
             <h1 className="text-5xl" style={{
               fontFamily: "'Elns Sans', sans-serif",
@@ -551,11 +572,13 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
               Between
             </h1>
           </div>
+
+          {/* PC版: ログイン/登録/プロフィール、SP版: 空白 */}
           <div className="flex-1 flex justify-end gap-3">
             {currentUser ? (
               <button
                 onClick={onProfile}
-                className="rounded-full hover:opacity-90 transition-all cursor-pointer"
+                className="hidden md:flex rounded-full hover:opacity-90 transition-all cursor-pointer"
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -581,7 +604,7 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
               <>
                 <button
                   onClick={onLogin}
-                  className="px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                  className="hidden md:block px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
                     color: '#FFFFFF',
@@ -592,7 +615,7 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
                 </button>
                 <button
                   onClick={onRegister}
-                  className="px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                  className="hidden md:block px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.25)',
                     color: '#FFFFFF',
@@ -605,6 +628,73 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
             )}
           </div>
         </div>
+
+        {/* SP版: モバイルメニュー */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden mb-6 rounded-2xl overflow-hidden shadow-lg" style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.25)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}>
+            {currentUser ? (
+              <div className="flex flex-col">
+                <button
+                  onClick={() => {
+                    onProfile();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 p-4 hover:bg-white/10 transition-all"
+                  style={{ color: '#FFFFFF' }}
+                >
+                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{
+                    backgroundColor: '#9CA3AF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {currentUser.profileImage ? (
+                      <img src={currentUser.profileImage} alt="プロフィール" className="w-full h-full object-cover" />
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#666666"/>
+                      </svg>
+                    )}
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-medium">{currentUser.name}</div>
+                    <div className="text-sm opacity-80">プロフィールを見る</div>
+                  </div>
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                <button
+                  onClick={() => {
+                    onLogin();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 p-4 hover:bg-white/10 transition-all border-b border-white/20"
+                  style={{ color: '#FFFFFF' }}
+                >
+                  <User size={20} />
+                  <span className="font-medium">ログイン</span>
+                </button>
+                <button
+                  onClick={() => {
+                    onRegister();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center gap-3 p-4 hover:bg-white/10 transition-all"
+                  style={{ color: '#FFFFFF' }}
+                >
+                  <User size={20} />
+                  <span className="font-medium">新規登録</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="text-center mb-8">
           <p className="text-lg" style={{color: '#FFFFFF'}}>やりたいことを投稿して、仲間を見つけよう</p>
