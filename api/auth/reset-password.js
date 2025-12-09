@@ -60,6 +60,10 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error('Password reset error:', error);
-    return res.status(500).json({ error: 'パスワードのリセットに失敗しました' });
+    // 開発環境では詳細なエラーを返す
+    const errorMessage = process.env.NODE_ENV === 'production'
+      ? 'パスワードのリセットに失敗しました'
+      : `パスワードのリセットに失敗しました: ${error.message}`;
+    return res.status(500).json({ error: errorMessage });
   }
 }
