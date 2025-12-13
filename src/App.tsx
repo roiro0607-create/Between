@@ -603,7 +603,7 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
             {/* SP版: ハンバーガーメニュー */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl hover:opacity-90 transition-all relative"
+              className="xl:hidden p-2 rounded-xl hover:opacity-90 transition-all relative"
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -629,7 +629,7 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
             {currentUser ? (
               <button
                 onClick={onProfile}
-                className="hidden md:flex rounded-full hover:opacity-90 transition-all cursor-pointer"
+                className="hidden xl:flex rounded-full hover:opacity-90 transition-all cursor-pointer"
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -655,7 +655,7 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
               <>
                 <button
                   onClick={onLogin}
-                  className="hidden md:block px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                  className="hidden xl:block px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
                     color: '#FFFFFF',
@@ -666,7 +666,7 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
                 </button>
                 <button
                   onClick={onRegister}
-                  className="hidden md:block px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                  className="hidden xl:block px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.25)',
                     color: '#FFFFFF',
@@ -682,7 +682,7 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
 
         {/* SP版: モバイルメニュー */}
         {isMobileMenuOpen && (
-          <div className="md:hidden mb-6 rounded-2xl overflow-hidden shadow-lg" style={{
+          <div className="xl:hidden mb-6 rounded-2xl overflow-hidden shadow-lg" style={{
             backgroundColor: 'rgba(255, 255, 255, 0.25)',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
