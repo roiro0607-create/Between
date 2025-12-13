@@ -11,6 +11,11 @@ export default function EventMatchingApp() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [appliedEvents, setAppliedEvents] = useState(() => {
+    // ローカルストレージから応募済みイベントIDを取得
+    const saved = localStorage.getItem('appliedEvents');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   // イベントのステータスを判定する関数
   const getEventStatus = (event) => {
@@ -162,6 +167,12 @@ export default function EventMatchingApp() {
         ...applicationData
       });
       setApplications([...applications, newApplication]);
+
+      // 応募済みイベントリストに追加
+      const updatedAppliedEvents = [...appliedEvents, eventId];
+      setAppliedEvents(updatedAppliedEvents);
+      localStorage.setItem('appliedEvents', JSON.stringify(updatedAppliedEvents));
+
       setView('application-success');
     } catch (error) {
       console.error('応募送信エラー:', error);
@@ -487,6 +498,7 @@ export default function EventMatchingApp() {
           onBack={() => setView('home')}
           formatDateTime={formatDateTime}
           getEventStatus={getEventStatus}
+          appliedEvents={appliedEvents}
         />
       </>
     );
@@ -1103,7 +1115,7 @@ function CreateEventView({ onCreate, onUpdate, editingEvent, onBack }) {
   );
 }
 
-function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStatus }) {
+function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStatus, appliedEvents }) {
   const [formData, setFormData] = useState({
     name: '',
     message: '',
@@ -1119,6 +1131,12 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStat
     // 締切チェック
     if (getEventStatus(event) === 'closed') {
       alert('このイベントは募集を終了しています');
+      return;
+    }
+
+    // 応募済みチェック
+    if (appliedEvents.includes(event.id)) {
+      alert('このイベントには既に応募済みです');
       return;
     }
 
@@ -1138,6 +1156,7 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStat
 
   const eventStatus = getEventStatus(event);
   const isClosed = eventStatus === 'closed';
+  const isAlreadyApplied = appliedEvents.includes(event.id);
 
   return (
     <div className="min-h-screen p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
@@ -1184,6 +1203,17 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStat
             }}>
               <p className="text-center font-medium" style={{color: '#FFFFFF'}}>
                 ⚠️ このイベントは募集を終了しています
+              </p>
+            </div>
+          )}
+
+          {isAlreadyApplied && !isClosed && (
+            <div className="mb-6 rounded-xl p-4" style={{
+              backgroundColor: 'rgba(74, 111, 165, 0.3)',
+              border: '1px solid rgba(74, 111, 165, 0.5)'
+            }}>
+              <p className="text-center font-medium" style={{color: '#FFFFFF'}}>
+                ✓ このイベントには既に応募済みです
               </p>
             </div>
           )}
@@ -1248,20 +1278,20 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStat
 
             <button
               onClick={handleSubmit}
-              disabled={isClosed}
+              disabled={isClosed || isAlreadyApplied}
               className="w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2"
               style={{
-                backgroundColor: isClosed ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.25)',
+                backgroundColor: (isClosed || isAlreadyApplied) ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.25)',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
                 color: '#FFFFFF',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
-                opacity: isClosed ? 0.5 : 1,
-                cursor: isClosed ? 'not-allowed' : 'pointer'
+                opacity: (isClosed || isAlreadyApplied) ? 0.5 : 1,
+                cursor: (isClosed || isAlreadyApplied) ? 'not-allowed' : 'pointer'
               }}
             >
-              <Send size={20} />
-              {isClosed ? '募集終了' : '応募する'}
+              {isAlreadyApplied ? <Check size={20} /> : <Send size={20} />}
+              {isClosed ? '募集終了' : isAlreadyApplied ? '応募済み' : '応募する'}
             </button>
           </div>
         </div>
