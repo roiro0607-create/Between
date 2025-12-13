@@ -565,17 +565,22 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
             {/* SP版: ハンバーガーメニュー */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl hover:opacity-90 transition-all"
+              className="md:hidden p-2 rounded-xl hover:opacity-90 transition-all relative"
               style={{
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                border: '1px solid rgba(255, 255, 255, 0.3)'
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
               aria-label="メニュー"
             >
               {isMobileMenuOpen ? (
-                <X size={24} color="#FFFFFF" />
+                <X size={24} color="#FFFFFF" style={{ position: 'absolute' }} />
               ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute' }}>
                   <line x1="4" y1="8" x2="20" y2="8" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
                   <line x1="4" y1="16" x2="20" y2="16" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
