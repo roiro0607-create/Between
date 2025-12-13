@@ -600,83 +600,87 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
 
           {/* PC版: ログイン/登録/プロフィール、SP版: ハンバーガーメニュー */}
           <div className="flex-1 flex justify-end gap-3">
-            {/* SP版: ハンバーガーメニュー */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="xl:hidden p-2 rounded-xl hover:opacity-90 transition-all relative"
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                width: '40px',
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-              aria-label="メニュー"
-            >
-              {isMobileMenuOpen ? (
-                <X size={24} color="#FFFFFF" style={{ position: 'absolute' }} />
-              ) : (
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute' }}>
-                  <line x1="4" y1="8" x2="20" y2="8" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
-                  <line x1="4" y1="16" x2="20" y2="16" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              )}
-            </button>
-
-            {/* PC版: ログイン/登録/プロフィール */}
-            {currentUser ? (
+            {/* SP版: ハンバーガーメニュー - xl未満でのみ表示 */}
+            <div className="xl:hidden flex items-center">
               <button
-                onClick={onProfile}
-                className="hidden xl:flex rounded-full hover:opacity-90 transition-all cursor-pointer"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 rounded-xl hover:opacity-90 transition-all relative"
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.2)',
                   border: '1px solid rgba(255, 255, 255, 0.3)',
-                  padding: '2px'
-                }}
-              >
-                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{
-                  backgroundColor: '#9CA3AF',
+                  width: '40px',
+                  height: '40px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
-                }}>
-                  {currentUser.profileImage ? (
-                    <img src={currentUser.profileImage} alt="プロフィール" className="w-full h-full object-cover" />
-                  ) : (
-                    <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#666666"/>
-                    </svg>
-                  )}
-                </div>
+                }}
+                aria-label="メニュー"
+              >
+                {isMobileMenuOpen ? (
+                  <X size={24} color="#FFFFFF" style={{ position: 'absolute' }} />
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ position: 'absolute' }}>
+                    <line x1="4" y1="8" x2="20" y2="8" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
+                    <line x1="4" y1="16" x2="20" y2="16" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                )}
               </button>
-            ) : (
-              <>
+            </div>
+
+            {/* PC版: ログイン/登録/プロフィール - xl以上でのみ表示 */}
+            <div className="hidden xl:flex items-center gap-3">
+              {currentUser ? (
                 <button
-                  onClick={onLogin}
-                  className="hidden xl:block px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                  onClick={onProfile}
+                  className="rounded-full hover:opacity-90 transition-all cursor-pointer"
                   style={{
                     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    color: '#FFFFFF',
-                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    padding: '2px'
                   }}
                 >
-                  ログイン
+                  <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{
+                    backgroundColor: '#9CA3AF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    {currentUser.profileImage ? (
+                      <img src={currentUser.profileImage} alt="プロフィール" className="w-full h-full object-cover" />
+                    ) : (
+                      <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#666666"/>
+                      </svg>
+                    )}
+                  </div>
                 </button>
-                <button
-                  onClick={onRegister}
-                  className="hidden xl:block px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                    color: '#FFFFFF',
-                    border: '1px solid rgba(255, 255, 255, 0.3)'
-                  }}
-                >
-                  新規登録
-                </button>
-              </>
-            )}
+              ) : (
+                <>
+                  <button
+                    onClick={onLogin}
+                    className="px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                      color: '#FFFFFF',
+                      border: '1px solid rgba(255, 255, 255, 0.3)'
+                    }}
+                  >
+                    ログイン
+                  </button>
+                  <button
+                    onClick={onRegister}
+                    className="px-4 py-2 rounded-xl font-medium hover:opacity-90 transition-all"
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                      color: '#FFFFFF',
+                      border: '1px solid rgba(255, 255, 255, 0.3)'
+                    }}
+                  >
+                    新規登録
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
