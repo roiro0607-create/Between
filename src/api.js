@@ -212,6 +212,18 @@ export const api = {
     return response.json();
   },
 
+  async reportEvent(eventId, reason = '不適切なコンテンツ') {
+    const response = await fetch(`${API_BASE_URL}/events/report`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ eventId, reason }),
+    });
+    if (!response.ok) throw new Error('Failed to report event');
+    return response.json();
+  },
+
   // 応募関連
   async getApplications(eventId = null) {
     const url = eventId

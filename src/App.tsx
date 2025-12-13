@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Users, Share2, Check, Clock, Send, User, Eye, EyeOff, X } from 'lucide-react';
+import { Calendar, MapPin, Users, Share2, Check, Clock, Send, User, Eye, EyeOff, X, Flag } from 'lucide-react';
 import { api } from './api';
 import { resizeAndConvertToBase64 } from './utils/imageUtils';
 
@@ -253,6 +253,31 @@ export default function EventMatchingApp() {
     setView('edit-event');
   };
 
+  const handleReportEvent = async (eventId) => {
+    const confirmed = window.confirm('このイベントを報告しますか？\n\n不適切なコンテンツとして報告されます。\n3件の報告で自動的に削除されます。');
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const result = await api.reportEvent(eventId);
+
+      if (result.deleted) {
+        alert(`報告を受け付けました。\n\nこのイベントは報告数が3件に達したため削除されました。`);
+        // イベント一覧を再読み込み
+        await loadData();
+        setView('event-list');
+        setCurrentEvent(null);
+      } else {
+        alert(`報告を受け付けました。\n\n現在の報告数: ${result.reportCount}件`);
+      }
+    } catch (error) {
+      console.error('イベント報告エラー:', error);
+      alert('イベントの報告に失敗しました');
+    }
+  };
+
   const shareEvent = (event) => {
     const url = `${window.location.origin}?event=${event.id}`;
 
@@ -480,6 +505,7 @@ export default function EventMatchingApp() {
           onShare={shareEvent}
           onEdit={handleEditEvent}
           onDelete={handleDeleteEvent}
+          onReport={handleReportEvent}
           onBack={() => setView('home')}
           formatDateTime={formatDateTime}
           getEventStatus={getEventStatus}
@@ -1244,7 +1270,7 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStat
   );
 }
 
-function EventDetailView({ event, applications, currentUser, onSelectApplicant, onShare, onEdit, onDelete, onBack, formatDateTime, getEventStatus }) {
+function EventDetailView({ event, applications, currentUser, onSelectApplicant, onShare, onEdit, onDelete, onReport, onBack, formatDateTime, getEventStatus }) {
   if (!event) return null;
 
   const isEventOwner = currentUser && event.creatorId === currentUser.id;
@@ -1364,6 +1390,20 @@ function EventDetailView({ event, applications, currentUser, onSelectApplicant, 
               <p className="text-sm font-medium text-center" style={{color: '#FFFFFF'}}>
                 ⚠️ このイベントは募集を終了しています
               </p>
+            </div>
+          )}
+
+          {/* 報告ボタン - イベント作成者以外に表示 */}
+          {!isEventOwner && (
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => onReport(event.id)}
+                className="text-xs flex items-center gap-1 mx-auto transition-opacity hover:opacity-70"
+                style={{color: '#FFFFFF', opacity: 0.6}}
+              >
+                <Flag size={12} />
+                このイベントを報告する
+              </button>
             </div>
           )}
         </div>
