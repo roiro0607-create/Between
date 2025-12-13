@@ -315,13 +315,16 @@ export default function EventMatchingApp() {
       bottom: 0,
       zIndex: -2,
       background: `
-        radial-gradient(circle at 10% 50%, #4a6fa5 0%, transparent 50%),
-        radial-gradient(circle at 90% 50%, #be896f 0%, transparent 50%),
-        radial-gradient(circle at 30% 30%, #6a8db5 0%, transparent 40%),
-        radial-gradient(circle at 70% 70%, #D9CFC1 0%, transparent 40%),
-        radial-gradient(circle at 50% 80%, #8fa5b0 0%, transparent 35%),
-        radial-gradient(circle at 50% 20%, #c4a68a 0%, transparent 35%),
-        linear-gradient(90deg, #4a6fa5 0%, #7a8faa 25%, #a89884 75%, #be896f 100%)
+        radial-gradient(ellipse at 15% 20%, #4a6fa5 0%, transparent 45%),
+        radial-gradient(ellipse at 85% 80%, #be896f 0%, transparent 45%),
+        radial-gradient(ellipse at 25% 65%, #6a8db5 0%, transparent 40%),
+        radial-gradient(ellipse at 75% 35%, #D9CFC1 0%, transparent 38%),
+        radial-gradient(ellipse at 50% 50%, #8fa5b0 0%, transparent 30%),
+        radial-gradient(ellipse at 40% 85%, #c4a68a 0%, transparent 35%),
+        radial-gradient(ellipse at 65% 15%, #5b7c99 0%, transparent 33%),
+        radial-gradient(ellipse at 10% 90%, #a89884 0%, transparent 28%),
+        radial-gradient(ellipse at 90% 10%, #b3a08f 0%, transparent 30%),
+        linear-gradient(135deg, #4a6fa5 0%, #7a8faa 30%, #a89884 70%, #be896f 100%)
       `
     }} />
   );
