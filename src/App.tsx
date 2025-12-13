@@ -710,7 +710,11 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
         )}
 
         <div className="text-center mb-8">
-          <p className="text-lg" style={{color: '#FFFFFF'}}>やりたいことを投稿して、仲間を見つけよう</p>
+          <p className="text-lg" style={{color: '#FFFFFF'}}>
+            <span className="inline md:inline">やりたいことを投稿して、</span>
+            <br className="md:hidden" />
+            <span className="inline md:inline">仲間を見つけよう</span>
+          </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6 lg:justify-center">
