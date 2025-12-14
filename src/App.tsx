@@ -386,9 +386,12 @@ export default function EventMatchingApp() {
         <GlassOverlay />
         <ProfileView
           user={currentUser}
+          events={events}
+          appliedEvents={appliedEvents}
           onUpdate={handleUpdateProfile}
           onLogout={handleLogout}
           onBack={() => setView('home')}
+          formatDateTime={formatDateTime}
         />
       </>
     );
@@ -2096,7 +2099,7 @@ function ResetPasswordView({ onResetPassword, onBack, onSwitchToLogin }) {
   );
 }
 
-function ProfileView({ user, onUpdate, onLogout, onBack }) {
+function ProfileView({ user, events, appliedEvents, onUpdate, onLogout, onBack, formatDateTime }) {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     age: user?.age || '',
@@ -2105,6 +2108,7 @@ function ProfileView({ user, onUpdate, onLogout, onBack }) {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(user?.profileImage || '');
+  const [displayCount, setDisplayCount] = useState(10);
 
   const handleImageChange = async (e) => {
     const file = e.target.files?.[0];
@@ -2302,6 +2306,97 @@ function ProfileView({ user, onUpdate, onLogout, onBack }) {
               ログアウト
             </button>
           </div>
+        </div>
+
+        {/* 応募した募集 */}
+        <div className="rounded-2xl p-6 shadow-lg mt-6" style={{
+          backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)'
+        }}>
+          <h2 className="text-2xl font-bold mb-6" style={{color: '#FFFFFF'}}>応募した募集</h2>
+
+          {appliedEvents.length === 0 ? (
+            <div className="text-center py-8" style={{color: '#FFFFFF', opacity: 0.8}}>
+              まだ応募した募集はありません
+            </div>
+          ) : (
+            <>
+              <div className="space-y-4">
+                {events
+                  .filter(event => appliedEvents.includes(event.id))
+                  .slice(0, displayCount)
+                  .map(event => {
+                    const selectedCount = event.selectedApplicants?.length || 0;
+                    const isClosed = new Date(event.date) < new Date() || selectedCount >= event.maxParticipants;
+
+                    return (
+                      <div
+                        key={event.id}
+                        className="rounded-xl p-4"
+                        style={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                          border: '1px solid rgba(255, 255, 255, 0.3)'
+                        }}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg mb-1" style={{color: '#FFFFFF'}}>{event.title}</h3>
+                            <p className="text-sm mb-2" style={{color: '#FFFFFF', opacity: 0.85}}>{event.description}</p>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-sm font-medium ml-2`} style={{
+                            backgroundColor: isClosed ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.3)',
+                            color: '#FFFFFF',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {isClosed ? '終了' : '募集中'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1 text-sm" style={{color: '#FFFFFF', opacity: 0.85}}>
+                          {event.date && (
+                            <div className="flex items-center gap-2">
+                              <Calendar size={14} />
+                              <span>{formatDateTime(event.date)}</span>
+                            </div>
+                          )}
+                          {event.location && (
+                            <div className="flex items-center gap-2">
+                              <MapPin size={14} />
+                              <span>{event.location}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2">
+                            <Users size={14} />
+                            <span>募集: {selectedCount} / {event.maxParticipants === 21 ? '21人〜' : `${event.maxParticipants}人`}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {/* もっと見るボタン */}
+              {appliedEvents.length > displayCount && (
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={() => setDisplayCount(prev => prev + 10)}
+                    className="px-6 py-3 rounded-xl font-medium hover:opacity-90 transition-all"
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)',
+                      color: '#FFFFFF',
+                      border: '1px solid rgba(255, 255, 255, 0.3)'
+                    }}
+                  >
+                    もっと見る
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
