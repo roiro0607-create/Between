@@ -18,6 +18,8 @@ export default async function handler(req, res) {
   try {
     const { eventId, reason } = req.body;
 
+    console.log('Report request:', { eventId, reason });
+
     if (!eventId) {
       return res.status(400).json({ error: 'イベントIDが必要です' });
     }
@@ -25,7 +27,14 @@ export default async function handler(req, res) {
     // イベント情報を取得
     const event = await kv.get(`event:${eventId}`);
     if (!event) {
+      console.log('Event not found:', eventId);
       return res.status(404).json({ error: 'イベントが見つかりません' });
+    }
+
+    // イベントの基本情報チェック
+    if (!event.title || event.maxParticipants === undefined || event.maxParticipants === null) {
+      console.log('Invalid event data:', event);
+      return res.status(400).json({ error: 'このイベントは不正なデータのため報告できません。管理者にお問い合わせください。' });
     }
 
     // 報告数を取得・更新
