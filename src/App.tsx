@@ -499,6 +499,7 @@ export default function EventMatchingApp() {
           event={currentEvent}
           onSubmit={submitApplication}
           onBack={() => setView('home')}
+          onReport={handleReportEvent}
           formatDateTime={formatDateTime}
           getEventStatus={getEventStatus}
           appliedEvents={appliedEvents}
@@ -1122,7 +1123,7 @@ function CreateEventView({ onCreate, onUpdate, editingEvent, onBack }) {
   );
 }
 
-function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStatus, appliedEvents }) {
+function ApplicationView({ event, onSubmit, onBack, onReport, formatDateTime, getEventStatus, appliedEvents }) {
   const [formData, setFormData] = useState({
     name: '',
     message: '',
@@ -1300,6 +1301,23 @@ function ApplicationView({ event, onSubmit, onBack, formatDateTime, getEventStat
               {isAlreadyApplied ? <Check size={20} /> : <Send size={20} />}
               {isClosed ? '募集終了' : isAlreadyApplied ? '応募済み' : '応募する'}
             </button>
+
+            {/* 報告ボタン */}
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => onReport(event.id)}
+                className="text-sm flex items-center gap-2 mx-auto px-4 py-2 rounded-lg transition-all hover:opacity-80"
+                style={{
+                  color: '#FFFFFF',
+                  opacity: 0.8,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}
+              >
+                <Flag size={14} />
+                不適切な募集を報告
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1432,13 +1450,18 @@ function EventDetailView({ event, applications, currentUser, onSelectApplicant, 
 
           {/* 報告ボタン - イベント作成者以外に表示 */}
           {!isEventOwner && (
-            <div className="mt-4 text-center">
+            <div className="mt-6 text-center">
               <button
                 onClick={() => onReport(event.id)}
-                className="text-xs flex items-center gap-1 mx-auto transition-opacity hover:opacity-70"
-                style={{color: '#FFFFFF', opacity: 0.6}}
+                className="text-sm flex items-center gap-2 mx-auto px-4 py-2 rounded-lg transition-all hover:opacity-80"
+                style={{
+                  color: '#FFFFFF',
+                  opacity: 0.8,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}
               >
-                <Flag size={12} />
+                <Flag size={14} />
                 不適切な募集を報告
               </button>
             </div>
