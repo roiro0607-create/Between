@@ -57,11 +57,28 @@ export default async function handler(req, res) {
       const userId = getUserIdFromToken(req.headers.authorization);
 
       const eventData = req.body;
+
+      // バリデーション
+      if (!eventData.title || eventData.title.trim() === '') {
+        return res.status(400).json({ error: 'タイトルは必須です' });
+      }
+
+      if (!eventData.maxParticipants || eventData.maxParticipants < 1) {
+        return res.status(400).json({ error: '募集人数は1人以上である必要があります' });
+      }
+
+      if (!eventData.description || eventData.description.trim() === '') {
+        return res.status(400).json({ error: '説明は必須です' });
+      }
+
       const eventId = `evt_${Date.now()}`;
 
       const newEvent = {
         id: eventId,
         ...eventData,
+        title: eventData.title.trim(),
+        description: eventData.description.trim(),
+        maxParticipants: parseInt(eventData.maxParticipants, 10),
         creatorId: userId || null,
         isAnonymous: !userId,
         createdAt: new Date().toISOString(),

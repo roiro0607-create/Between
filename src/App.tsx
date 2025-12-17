@@ -964,8 +964,19 @@ function CreateEventView({ onCreate, onUpdate, editingEvent, onBack }) {
   });
 
   const handleSubmit = () => {
-    if (!formData.title || !formData.description) {
-      alert('タイトルと説明は必須です');
+    // バリデーション
+    if (!formData.title || formData.title.trim() === '') {
+      alert('タイトルを入力してください');
+      return;
+    }
+
+    if (!formData.description || formData.description.trim() === '') {
+      alert('説明を入力してください');
+      return;
+    }
+
+    if (!formData.maxParticipants || formData.maxParticipants < 1) {
+      alert('募集人数は1人以上を選択してください');
       return;
     }
 
