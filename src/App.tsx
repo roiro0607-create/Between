@@ -265,7 +265,7 @@ export default function EventMatchingApp() {
   };
 
   const handleReportEvent = async (eventId) => {
-    const confirmed = window.confirm('このイベントを報告しますか？\n\n不適切なコンテンツとして報告されます。\n3件の報告で自動的に削除されます。');
+    const confirmed = window.confirm('このイベントを不適切な募集として報告しますか？\n\n報告されたイベントは即座に募集終了となります。');
 
     if (!confirmed) {
       return;
@@ -274,8 +274,8 @@ export default function EventMatchingApp() {
     try {
       const result = await api.reportEvent(eventId);
 
-      if (result.deleted) {
-        alert(`報告を受け付けました。\n\nこのイベントは報告数が3件に達したため削除されました。`);
+      if (result.closed) {
+        alert(`報告を受け付けました。\n\nこのイベントの募集を終了しました。`);
         // イベント一覧を再読み込み
         await loadData();
         setView('event-list');
@@ -867,6 +867,24 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
                             <span>締切: {formatDateTime(event.deadline)}</span>
                           </div>
                         )}
+                      </div>
+
+                      {/* 報告ボタン */}
+                      <div className="mt-3 flex justify-end">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReportEvent(event.id);
+                          }}
+                          className="text-xs flex items-center gap-1 px-2 py-1 rounded transition-opacity hover:opacity-70"
+                          style={{
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                          }}
+                        >
+                          <Flag size={12} />
+                          不適切な募集を報告
+                        </button>
                       </div>
                     </div>
                   ))}

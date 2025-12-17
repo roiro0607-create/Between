@@ -36,46 +36,35 @@ export default async function handler(req, res) {
     // 報告数を保存
     await kv.set(reportKey, newReportCount);
 
-    // 報告詳細を保存（オプション：後でメール送信時に利用可能）
+    // 報告詳細を保存
     const reportDetailKey = `event:${eventId}:report:${newReportCount}`;
     await kv.set(reportDetailKey, {
       reason: reason || '不適切なコンテンツ',
       reportedAt: new Date().toISOString()
     });
 
-    // 3件以上の報告で自動削除
-    if (newReportCount >= 3) {
-      // イベントを削除
-      await kv.del(`event:${eventId}`);
+    // 1件の報告で募集を強制終了（削除はしない）
+    // イベントの募集人数を現在の選択済み人数に設定して募集終了状態にする
+    const updatedEvent = {
+      ...event,
+      maxParticipants: event.selectedApplicants?.length || 0,
+      reportedAt: new Date().toISOString(),
+      reportReason: reason || '不適切なコンテンツ'
+    };
 
-      // イベント一覧から削除
-      const allEvents = await kv.get('events') || [];
-      const updatedEvents = allEvents.filter(e => e.id !== eventId);
-      await kv.set('events', updatedEvents);
+    // イベント詳細を更新
+    await kv.set(`event:${eventId}`, updatedEvent);
 
-      // 報告データもクリーンアップ
-      await kv.del(reportKey);
-      for (let i = 1; i <= newReportCount; i++) {
-        await kv.del(`event:${eventId}:report:${i}`);
-      }
-
-      // TODO: ここでメール送信を実装可能
-      // sendEmail({
-      //   to: 'roiro0607@gmail.com',
-      //   subject: `イベントが報告により削除されました: ${event.title}`,
-      //   body: `イベントID: ${eventId}\n報告数: ${newReportCount}`
-      // });
-
-      return res.status(200).json({
-        message: 'イベントが報告されました。報告数が3件に達したため、イベントを削除しました。',
-        deleted: true,
-        reportCount: newReportCount
-      });
-    }
+    // イベント一覧も更新
+    const allEvents = await kv.get('events') || [];
+    const updatedEvents = allEvents.map(e =>
+      e.id === eventId ? updatedEvent : e
+    );
+    await kv.set('events', updatedEvents);
 
     return res.status(200).json({
-      message: 'イベントを報告しました',
-      deleted: false,
+      message: 'イベントが報告されました。募集を終了しました。',
+      closed: true,
       reportCount: newReportCount
     });
   } catch (error) {
