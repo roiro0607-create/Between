@@ -868,24 +868,6 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
                           </div>
                         )}
                       </div>
-
-                      {/* 報告ボタン */}
-                      <div className="mt-3 flex justify-end">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleReportEvent(event.id);
-                          }}
-                          className="text-xs flex items-center gap-1 px-2 py-1 rounded transition-opacity hover:opacity-70"
-                          style={{
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                          }}
-                        >
-                          <Flag size={12} />
-                          不適切な募集を報告
-                        </button>
-                      </div>
                     </div>
                   ))}
                   
@@ -1457,7 +1439,7 @@ function EventDetailView({ event, applications, currentUser, onSelectApplicant, 
                 style={{color: '#FFFFFF', opacity: 0.6}}
               >
                 <Flag size={12} />
-                このイベントを報告する
+                不適切な募集を報告
               </button>
             </div>
           )}
