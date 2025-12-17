@@ -10,5 +10,11 @@
       "memory": 1024,
       "maxDuration": 10
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-events",
+      "schedule": "0 * * * *"
+    }
+  ]
 }
