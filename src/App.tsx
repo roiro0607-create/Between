@@ -546,6 +546,69 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'my'
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // ログインしていない場合はログイン・登録画面を表示
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
+        <div className="max-w-md w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-6xl mb-4" style={{
+              fontFamily: "'Elns Sans', sans-serif",
+              fontWeight: 600,
+              color: '#FFFFFF',
+              letterSpacing: '1px',
+              textShadow: '0 2px 20px rgba(0,0,0,0.1)'
+            }}>
+              Between
+            </h1>
+            <p className="text-lg" style={{color: 'rgba(255, 255, 255, 0.9)'}}>
+              気軽に人と繋がるイベントマッチング
+            </p>
+          </div>
+
+          <div className="rounded-2xl p-8 shadow-lg" style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}>
+            <p className="text-center mb-6" style={{color: '#FFFFFF', fontSize: '16px'}}>
+              イベントを見るにはログインが必要です
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={onLogin}
+                className="w-full py-3 rounded-xl font-medium hover:opacity-90 transition-all"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  fontSize: '16px'
+                }}
+              >
+                ログイン
+              </button>
+
+              <button
+                onClick={onRegister}
+                className="w-full py-3 rounded-xl font-medium hover:opacity-90 transition-all"
+                style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  color: '#FFFFFF',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  fontSize: '16px'
+                }}
+              >
+                新規登録
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // タブに応じてイベントをフィルタリング
   const filteredEvents = activeTab === 'my' && currentUser
     ? events.filter(event => event.creatorId === currentUser.id)
