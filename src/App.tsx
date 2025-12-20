@@ -550,30 +550,64 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
   if (!currentUser) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4" style={{fontFamily: "'Noto Sans JP', sans-serif"}}>
-        <div className="max-w-md w-full">
-          <div className="text-center mb-8">
-            <h1 className="text-6xl mb-4" style={{
+        <div className="max-w-xl w-full">
+          {/* ロゴとキャッチコピー */}
+          <div className="text-center mb-12">
+            <h1 className="text-7xl mb-6" style={{
               fontFamily: "'Elns Sans', sans-serif",
               fontWeight: 600,
               color: '#FFFFFF',
-              letterSpacing: '1px',
-              textShadow: '0 2px 20px rgba(0,0,0,0.1)'
+              letterSpacing: '2px',
+              textShadow: '0 4px 30px rgba(0,0,0,0.15)'
             }}>
               Between
             </h1>
-            <p className="text-lg" style={{color: 'rgba(255, 255, 255, 0.9)'}}>
-              気軽に人と繋がるイベントマッチング
+            <p className="text-2xl mb-3" style={{
+              color: '#FFFFFF',
+              fontWeight: 500,
+              textShadow: '0 2px 10px rgba(0,0,0,0.1)'
+            }}>
+              気軽に人と繋がる
+            </p>
+            <p className="text-xl" style={{
+              color: 'rgba(255, 255, 255, 0.85)',
+              fontWeight: 400
+            }}>
+              イベントマッチング
             </p>
           </div>
 
-          <div className="rounded-2xl p-8 shadow-lg" style={{
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+          {/* メインCTA - 新しいイベントを作る */}
+          <div className="mb-8">
+            <button
+              onClick={onCreateNew}
+              className="w-full py-5 rounded-2xl font-bold text-xl shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                backdropFilter: 'blur(15px)',
+                WebkitBackdropFilter: 'blur(15px)',
+                color: '#FFFFFF',
+                border: '2px solid rgba(255, 255, 255, 0.4)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+              }}
+            >
+              ✨ 新しいイベントを作る
+            </button>
+          </div>
+
+          {/* ログイン・新規登録 */}
+          <div className="rounded-2xl p-6 shadow-lg" style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.15)',
             backdropFilter: 'blur(10px)',
             WebkitBackdropFilter: 'blur(10px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)'
+            border: '1px solid rgba(255, 255, 255, 0.25)'
           }}>
-            <p className="text-center mb-6" style={{color: '#FFFFFF', fontSize: '16px'}}>
-              イベントを見るにはログインが必要です
+            <p className="text-center mb-4" style={{
+              color: 'rgba(255, 255, 255, 0.9)',
+              fontSize: '15px',
+              fontWeight: 500
+            }}>
+              既にアカウントをお持ちの方
             </p>
 
             <div className="space-y-3">
@@ -589,6 +623,10 @@ function HomeView({ events, currentUser, onCreateNew, onViewEvent, onLogin, onRe
               >
                 ログイン
               </button>
+
+              <div className="text-center" style={{color: 'rgba(255, 255, 255, 0.7)', fontSize: '14px'}}>
+                または
+              </div>
 
               <button
                 onClick={onRegister}
