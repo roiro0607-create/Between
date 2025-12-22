@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>イベント削除 - Between Admin</title>
+  <title>イベント管理 - Between Admin</title>
   <style>
     * {
       margin: 0;
@@ -15,27 +15,17 @@
       font-family: 'Noto Sans JP', sans-serif;
       background: linear-gradient(135deg, #4a6fa5 0%, #6a8db5 30%, #a89884 70%, #be896f 100%);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       padding: 20px;
     }
 
     .container {
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 20px;
-      padding: 40px;
-      max-width: 500px;
-      width: 100%;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
+      margin: 0 auto;
     }
 
     h1 {
       color: #FFFFFF;
-      font-size: 28px;
+      font-size: 32px;
       margin-bottom: 10px;
       text-align: center;
     }
@@ -47,72 +37,164 @@
       margin-bottom: 30px;
     }
 
-    .form-group {
+    .header-actions {
+      display: flex;
+      gap: 12px;
       margin-bottom: 20px;
+      justify-content: center;
     }
 
-    label {
-      display: block;
-      color: #FFFFFF;
+    .btn {
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
       font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-
-    input {
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      background: rgba(255, 255, 255, 0.15);
-      color: #FFFFFF;
-      font-size: 16px;
-      transition: all 0.3s;
-    }
-
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    input:focus {
-      outline: none;
-      background: rgba(255, 255, 255, 0.25);
-      border-color: rgba(255, 255, 255, 0.5);
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 100, 100, 0.3);
-      background: rgba(255, 100, 100, 0.25);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      color: #FFFFFF;
-      font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
 
-    button:hover {
-      background: rgba(255, 100, 100, 0.35);
+    .btn-refresh {
+      background: rgba(76, 175, 80, 0.25);
+      border: 1px solid rgba(76, 175, 80, 0.5);
+      color: #FFFFFF;
+    }
+
+    .btn-refresh:hover {
+      background: rgba(76, 175, 80, 0.35);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 100, 100, 0.3);
     }
 
-    button:disabled {
+    .btn-cleanup {
+      background: rgba(255, 150, 50, 0.25);
+      border: 1px solid rgba(255, 150, 50, 0.3);
+      color: #FFFFFF;
+    }
+
+    .btn-cleanup:hover {
+      background: rgba(255, 150, 50, 0.35);
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
       transform: none;
     }
 
+    .events-container {
+      display: grid;
+      gap: 16px;
+    }
+
+    .event-card {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      transition: all 0.3s;
+    }
+
+    .event-card:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .event-info {
+      flex: 1;
+    }
+
+    .event-title {
+      color: #FFFFFF;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .event-details {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .event-detail-item {
+      margin: 4px 0;
+    }
+
+    .event-id {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 12px;
+      font-family: monospace;
+      margin-top: 8px;
+    }
+
+    .invalid-badge {
+      display: inline-block;
+      background: rgba(255, 100, 100, 0.3);
+      border: 1px solid rgba(255, 100, 100, 0.5);
+      color: #FFFFFF;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .delete-btn {
+      background: rgba(255, 100, 100, 0.25);
+      border: 1px solid rgba(255, 100, 100, 0.3);
+      color: #FFFFFF;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+
+    .delete-btn:hover {
+      background: rgba(255, 100, 100, 0.4);
+      transform: scale(1.1);
+    }
+
+    .delete-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .loading {
+      text-align: center;
+      color: #FFFFFF;
+      padding: 40px;
+      font-size: 16px;
+    }
+
+    .empty {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.8);
+      padding: 40px;
+      font-size: 16px;
+    }
+
     .result {
-      margin-top: 20px;
+      margin-bottom: 20px;
       padding: 16px;
       border-radius: 12px;
       color: #FFFFFF;
       font-size: 14px;
+      text-align: center;
       display: none;
     }
 
@@ -128,135 +210,175 @@
       display: block;
     }
 
-    .deleted-list {
-      margin-top: 12px;
-      padding-left: 20px;
-    }
-
-    .deleted-list li {
-      margin: 4px 0;
+    .stats {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #FFFFFF;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🗑️ イベント削除</h1>
-    <p class="subtitle">タイトルでイベントを削除します</p>
-
-    <form id="deleteForm">
-      <div class="form-group">
-        <label for="title">削除するイベントのタイトル</label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          placeholder="例: n"
-          required
-        >
-      </div>
-
-      <button type="submit" id="submitBtn">
-        削除する
-      </button>
-    </form>
-
-    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.2);">
-      <p style="color: rgba(255, 255, 255, 0.8); font-size: 14px; text-align: center; margin-bottom: 10px;">
-        または
-      </p>
-      <button onclick="cleanupInvalidEvents()" id="cleanupBtn" style="background: rgba(255, 150, 50, 0.25); border-color: rgba(255, 150, 50, 0.3);">
-        不正なイベントを一括削除
-      </button>
-    </div>
+    <h1>🗑️ イベント管理</h1>
+    <p class="subtitle">すべてのイベントを表示・削除できます</p>
 
     <div id="result" class="result"></div>
+
+    <div class="header-actions">
+      <button class="btn btn-refresh" onclick="loadEvents()">🔄 更新</button>
+      <button class="btn btn-cleanup" onclick="cleanupInvalidEvents()">🧹 不正イベント一括削除</button>
+    </div>
+
+    <div id="stats" class="stats"></div>
+
+    <div id="loading" class="loading" style="display: none;">
+      読み込み中...
+    </div>
+
+    <div id="events" class="events-container"></div>
   </div>
 
   <script>
-    const form = document.getElementById('deleteForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const resultDiv = document.getElementById('result');
+    let events = [];
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // ページ読み込み時にイベントを取得
+    window.addEventListener('DOMContentLoaded', () => {
+      loadEvents();
+    });
 
-      const title = document.getElementById('title').value.trim();
+    // イベント一覧を取得
+    async function loadEvents() {
+      const loadingDiv = document.getElementById('loading');
+      const eventsDiv = document.getElementById('events');
+      const statsDiv = document.getElementById('stats');
 
-      if (!title) {
-        showResult('error', 'タイトルを入力してください');
-        return;
-      }
-
-      // 確認ダイアログ
-      if (!confirm(`本当にタイトル「${title}」のイベントを削除しますか？\nこの操作は取り消せません。`)) {
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = '削除中...';
+      loadingDiv.style.display = 'block';
+      eventsDiv.innerHTML = '';
+      hideResult();
 
       try {
-        const response = await fetch('/api/admin/delete-event-by-title', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ title }),
-        });
+        const response = await fetch('/api/events');
 
-        console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
+        if (!response.ok) {
+          throw new Error('イベントの取得に失敗しました');
+        }
 
-        const text = await response.text();
-        console.log('Response text:', text);
+        events = await response.json();
+        loadingDiv.style.display = 'none';
 
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          showResult('error', `JSONパースエラー: ${text.substring(0, 100)}`);
+        if (events.length === 0) {
+          eventsDiv.innerHTML = '<div class="empty">イベントがありません</div>';
+          statsDiv.innerHTML = '';
           return;
         }
 
-        if (response.ok) {
-          let message = `✓ ${data.message}\n\n削除されたイベント:`;
-          if (data.deletedEvents && data.deletedEvents.length > 0) {
-            message += '<ul class="deleted-list">';
-            data.deletedEvents.forEach(event => {
-              message += `<li>${event.title} (ID: ${event.id})</li>`;
-            });
-            message += '</ul>';
-            message += `\n残りのイベント数: ${data.remainingEvents}件`;
-          }
-          showResult('success', message);
-          form.reset();
-        } else {
-          showResult('error', `エラー: ${data.error}`);
+        // 統計情報を表示
+        const invalidCount = events.filter(e => isInvalidEvent(e)).length;
+        statsDiv.innerHTML = `
+          <strong>総イベント数:</strong> ${events.length}件
+          ${invalidCount > 0 ? `<br><span style="color: rgba(255, 100, 100, 0.9);">不正なイベント: ${invalidCount}件</span>` : ''}
+        `;
+
+        // イベントカードを表示
+        eventsDiv.innerHTML = events.map(event => createEventCard(event)).join('');
+
+      } catch (error) {
+        console.error('イベント取得エラー:', error);
+        loadingDiv.style.display = 'none';
+        showResult('error', `エラー: ${error.message}`);
+      }
+    }
+
+    // イベントカードのHTMLを生成
+    function createEventCard(event) {
+      const isInvalid = isInvalidEvent(event);
+      const invalidReason = getInvalidReason(event);
+
+      return `
+        <div class="event-card">
+          <div class="event-info">
+            <div class="event-title">${event.title || '(タイトルなし)'}</div>
+            <div class="event-details">
+              <div class="event-detail-item">📍 ${event.location || '場所未設定'}</div>
+              <div class="event-detail-item">👥 募集人数: ${event.maxParticipants !== undefined ? event.maxParticipants + '人' : '未設定'}</div>
+              <div class="event-detail-item">📅 ${event.date || '日付未設定'} ${event.time || ''}</div>
+              ${event.description ? `<div class="event-detail-item">💬 ${event.description.substring(0, 50)}${event.description.length > 50 ? '...' : ''}</div>` : ''}
+            </div>
+            <div class="event-id">ID: ${event.id}</div>
+            ${isInvalid ? `<span class="invalid-badge">⚠️ ${invalidReason}</span>` : ''}
+          </div>
+          <button class="delete-btn" onclick="deleteEvent('${event.id}', '${(event.title || '(タイトルなし)').replace(/'/g, "\\'")}')">
+            ✕
+          </button>
+        </div>
+      `;
+    }
+
+    // イベントが不正かチェック
+    function isInvalidEvent(event) {
+      return !event.title ||
+             event.title.trim() === '' ||
+             event.maxParticipants === undefined ||
+             event.maxParticipants === null ||
+             isNaN(event.maxParticipants) ||
+             event.maxParticipants < 0 ||
+             !event.description ||
+             event.description.trim() === '';
+    }
+
+    // 不正な理由を取得
+    function getInvalidReason(event) {
+      if (!event.title || event.title.trim() === '') return 'タイトルなし';
+      if (event.maxParticipants === undefined || event.maxParticipants === null || isNaN(event.maxParticipants) || event.maxParticipants < 0) return '募集人数不正';
+      if (!event.description || event.description.trim() === '') return '説明なし';
+      return '不正';
+    }
+
+    // 個別イベントを削除
+    async function deleteEvent(eventId, eventTitle) {
+      if (!confirm(`本当に「${eventTitle}」を削除しますか？\nこの操作は取り消せません。`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/events/${eventId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('削除に失敗しました');
         }
+
+        showResult('success', `✓ 「${eventTitle}」を削除しました`);
+        loadEvents(); // 一覧を再読み込み
+
       } catch (error) {
         console.error('削除エラー:', error);
         showResult('error', `エラー: ${error.message}`);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '削除する';
       }
-    });
-
-    function showResult(type, message) {
-      resultDiv.className = `result ${type}`;
-      resultDiv.innerHTML = message;
     }
 
     // 不正イベント一括削除
     async function cleanupInvalidEvents() {
-      const cleanupBtn = document.getElementById('cleanupBtn');
+      const invalidCount = events.filter(e => isInvalidEvent(e)).length;
 
-      if (!confirm('不正なイベント（タイトルなし、募集人数未設定等）をすべて削除しますか？\nこの操作は取り消せません。')) {
+      if (invalidCount === 0) {
+        showResult('error', '削除対象の不正なイベントはありません');
         return;
       }
 
-      cleanupBtn.disabled = true;
-      cleanupBtn.textContent = 'クリーンアップ中...';
+      if (!confirm(`不正なイベント ${invalidCount}件 をすべて削除しますか？\nこの操作は取り消せません。`)) {
+        return;
+      }
 
       try {
         const response = await fetch('/api/admin/cleanup-invalid-events', {
@@ -266,43 +388,42 @@
           },
         });
 
-        console.log('Cleanup response status:', response.status);
-
         const text = await response.text();
-        console.log('Cleanup response text:', text);
-
         let data;
+
         try {
           data = JSON.parse(text);
         } catch (e) {
-          showResult('error', `JSONパースエラー: ${text.substring(0, 100)}`);
-          return;
+          throw new Error('レスポンスの解析に失敗しました');
         }
 
         if (response.ok) {
-          let message = `✓ ${data.message}`;
-          if (data.deletedEvents && data.deletedEvents.length > 0) {
-            message += '<br><br>削除されたイベント:';
-            message += '<ul class="deleted-list">';
-            data.deletedEvents.forEach(event => {
-              message += `<li>${event.title} (ID: ${event.id}, 理由: ${event.reason})</li>`;
-            });
-            message += '</ul>';
-            message += `<br>残りのイベント数: ${data.remainingEvents}件`;
-          } else {
-            message += '<br><br>削除対象のイベントはありませんでした。';
-          }
-          showResult('success', message);
+          showResult('success', `✓ ${data.message}`);
+          loadEvents(); // 一覧を再読み込み
         } else {
           showResult('error', `エラー: ${data.error || 'クリーンアップに失敗しました'}`);
         }
+
       } catch (error) {
         console.error('クリーンアップエラー:', error);
         showResult('error', `エラー: ${error.message}`);
-      } finally {
-        cleanupBtn.disabled = false;
-        cleanupBtn.textContent = '不正なイベントを一括削除';
       }
+    }
+
+    function showResult(type, message) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.className = `result ${type}`;
+      resultDiv.textContent = message;
+
+      // 5秒後に自動で消す
+      setTimeout(() => {
+        hideResult();
+      }, 5000);
+    }
+
+    function hideResult() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.className = 'result';
     }
   </script>
 </body>
